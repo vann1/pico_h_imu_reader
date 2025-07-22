@@ -59,6 +59,36 @@ bool ism330dhcx_read_bytes(i2c_inst_t *i2c_port, uint8_t device_addr, uint8_t re
     return result == len;
 }
 
+bool reserved_addr(uint8_t addr) {
+    return (addr & 0x78) == 0 || (addr & 0x78) == 0x78;
+}
+
+void i2c_scan(i2c_inst_t *i2c_port) {
+    printf("\nI2C Bus Scan\n");
+    printf("---0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F\n");
+
+    for (int addr = 0; addr < (1 << 7); ++addr) {
+        if (addr % 16 == 0) {
+            printf("%02x ", addr);
+        }
+
+        // Perform a 1-byte dummy read from the probe address. If a slave
+        // acknowledges this address, the function returns the number of bytes
+        // transferred. If the address byte is ignored, the function returns
+        // -1.
+
+        // Skip over any reserved addresses.
+        int ret;
+        uint8_t rxdata;
+        if (reserved_addr(addr))
+            ret = PICO_ERROR_GENERIC;
+        else
+            ret = i2c_read_blocking(i2c_port, addr, &rxdata, 1, false);
+
+        printf(ret < 0 ? "." : "@");
+        printf(addr % 16 == 15 ? "\n" : "  ");
+    }
+}
 
 // Initialize ISM330DHCX
 bool ism330dhcx_init(i2c_inst_t *i2c_port, uint8_t device_addr) {
@@ -92,67 +122,15 @@ bool ism330dhcx_init(i2c_inst_t *i2c_port, uint8_t device_addr) {
     return true;
 }
 
-// Read accelerometer data
-bool read_accelerometer(int16_t *x, int16_t *y, int16_t *z) {
-    uint8_t buffer[6];
-    
-    if (!ism330dhcx_read_bytes(I2C_PORT_0, ISM330DHCX_ADDR_DO_LOW,OUTX_L_XL, buffer, 6)) {
-        return false;
-    }
-    
-    *x = (int16_t)(buffer[1] << 8 | buffer[0]);
-    *y = (int16_t)(buffer[3] << 8 | buffer[2]);
-    *z = (int16_t)(buffer[5] << 8 | buffer[4]);
-    
-    return true;
-}
-
-// Read gyroscope data
-bool read_gyroscope(int16_t *x, int16_t *y, int16_t *z) {
-    uint8_t buffer[6];
-    
-    if (!ism330dhcx_read_bytes(I2C_PORT_0, ISM330DHCX_ADDR_DO_LOW, OUTX_L_G, buffer, 6)) {
-        return false;
-    }
-    
-    *x = (int16_t)(buffer[1] << 8 | buffer[0]);
-    *y = (int16_t)(buffer[3] << 8 | buffer[2]);
-    *z = (int16_t)(buffer[5] << 8 | buffer[4]);
-    
-    return true;
-}
-
-// Convert raw accelerometer data to mg
-float accel_to_mg(int16_t raw) {
-    // For ±2g range: 0.061 mg/LSB
-    return raw * 0.061f;
-}
-
-// Convert raw gyroscope data to mdps (milli-degrees per second)
-float gyro_to_mdps(int16_t raw) {
-    // For ±250 dps range: 8.75 mdps/LSB
-    return raw * 8.75f;
-}
-
-// Calculate pitch angle from accelerometer (in degrees)
-float calculate_pitch(float ax_mg, float ay_mg, float az_mg) {
-    // Pitch: rotation around Y-axis
-    // atan2 returns radians, convert to degrees
-    return atan2f(ax_mg, sqrtf(ay_mg * ay_mg + az_mg * az_mg)) * 180.0f / M_PI;
-}
-
-// Calculate roll angle from accelerometer (in degrees)
-float calculate_roll(float ax_mg, float ay_mg, float az_mg) {
-    // Roll: rotation around X-axis
-    // atan2 returns radians, convert to degrees
-    return atan2f(ay_mg, sqrtf(ax_mg * ax_mg + az_mg * az_mg)) * 180.0f / M_PI;
-}
 
 int main() {
     stdio_init_all();
     while (!tud_cdc_connected()) {
         sleep_ms(100);
     }
+    //Scan i2c devices
+    i2c_scan(I2C_PORT_0);
+
     // Initialize i2c0 bus and gpio pins
     i2c_init(I2C_PORT_0, 100*1000);
     gpio_set_function(I2C_SDA_0, GPIO_FUNC_I2C);
@@ -190,40 +168,7 @@ int main() {
     
     // Main loop
     while (1) {
-        int16_t ax, ay, az;
-        int16_t gx, gy, gz;
-        // float values[];
-        // Read sensor data
-        if (read_accelerometer(&ax, &ay, &az) && read_gyroscope(&gx, &gy, &gz)) {
-            // Convert to physical units
-            float ax_mg = accel_to_mg(ax);
-            float ay_mg = accel_to_mg(ay);
-            float az_mg = accel_to_mg(az);
-            
-            float gx_mdps = gyro_to_mdps(gx);
-            float gy_mdps = gyro_to_mdps(gy);
-            float gz_mdps = gyro_to_mdps(gz);
-            
-            // Calculates pitch and roll
-            float pitch = calculate_pitch(ax_mg,ay_mg,az_mg);
-            float roll = calculate_roll(ax_mg,ay_mg,az_mg);
-        } else {
-            printf("{\"error\":\"Failed to read sensor\"}\n");
-        }
-        // Create JSON string
-        // char json_buffer[256];
-        // snprintf(json_buffer, sizeof(json_buffer),
-        //         "{\"accel\":{\"x\":%.2f,\"y\":%.2f,\"z\":%.2f},"
-        //         "\"gyro\":{\"x\":%.2f,\"y\":%.2f,\"z\":%.2f},"
-        //         "\"pitch\":{\"pitch\":%.5f},"
-        //         "\"roll\":{\"roll\":%.5f}}\n",
-        //         ax_mg, ay_mg, az_mg, gx_mdps, gy_mdps, gz_mdps, pitch, roll);
-        
-        // Send over USB CDC
-        // printf("%s", json_buffer);
-
-        // Delay between readings (adjust as needed)
-        sleep_ms((60/2)*16.6666666666); // 2Hz update rate
+        continue;
     }
     
     return 0;

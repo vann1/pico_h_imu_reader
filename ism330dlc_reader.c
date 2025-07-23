@@ -129,7 +129,7 @@ int main() {
         sleep_ms(100);
     }
     //Scan i2c devices
-    i2c_scan(I2C_PORT_0);
+
 
     // Initialize i2c0 bus and gpio pins
     i2c_init(I2C_PORT_0, 100*1000);
@@ -137,14 +137,12 @@ int main() {
     gpio_set_function(I2C_SCL_0, GPIO_FUNC_I2C);
     gpio_pull_up(I2C_SDA_0);
     gpio_pull_up(I2C_SCL_0);
-
     // Initialize i2c1 bus and gpio pins
     i2c_init(I2C_PORT_1, 100*1000);
     gpio_set_function(I2C_SDA_1, GPIO_FUNC_I2C);
     gpio_set_function(I2C_SCL_1, GPIO_FUNC_I2C);
     gpio_pull_up(I2C_SDA_1);
     gpio_pull_up(I2C_SCL_1);
-
     printf("ISM330DHCX USB CDC Reader\n");
     printf("Initializing sensor...\n");
     
@@ -156,6 +154,12 @@ int main() {
             sleep_ms(1000);
         }
     }
+    if (!ism330dhcx_init(I2C_PORT_0, ISM330DHCX_ADDR_DO_HIGH)) {
+        printf("Failed to initialize ISM330DHCX with i2c_port: %s and i2c_address: 0x%02x!\n", I2C_PORT_0, ISM330DHCX_ADDR_DO_HIGH);
+        while (1) {
+            sleep_ms(1000);
+        }
+    }    
     if (!ism330dhcx_init(I2C_PORT_1, ISM330DHCX_ADDR_DO_LOW)) {
         printf("Failed to initialize ISM330DHCX with i2c_port: %s and i2c_address: 0x%02x!\n", I2C_PORT_1, ISM330DHCX_ADDR_DO_LOW);
         while (1) {
@@ -165,7 +169,10 @@ int main() {
     
     printf("Sensor initialized successfully!\n");
     printf("Starting data stream...\n");
-    
+    i2c_scan(I2C_PORT_0);
+    i2c_scan(I2C_PORT_1);
+
+
     // Main loop
     while (1) {
         continue;

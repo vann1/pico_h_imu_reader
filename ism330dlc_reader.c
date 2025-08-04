@@ -6,16 +6,8 @@
 #include "hardware/i2c.h"
 #include "tusb.h"
 #include "ism330dlc_registers.h"
+#include "ism330dlc_config.h"
 
-// ISM330DHCX I2C address (SDO/SA0 pin low)
-#define ISM330DHCX_ADDR_DO_LOW 0x6A
-// ISM330DHCX I2C address (SDO/SA0 pin high)
-#define ISM330DHCX_ADDR_DO_HIGH 0x6B
-
-// Use 0x6B if SDO/SA0 pin is high
-
-// Expected WHO_AM_I value for ISM330DHCX
-#define ISM330DHCX_ID 0x6B
 
 // I2C(0) configuration
 #define I2C_PORT_0 i2c0
@@ -105,26 +97,29 @@ bool ism330dhcx_init(i2c_inst_t *i2c_port, uint8_t device_addr) {
     uint8_t id = 0;
 
     // Check WHO_AM_I register
-    if (!ism330dhcx_read_reg(i2c_port, device_addr, WHO_AM_I, &id)) {
-        printf("Failed to read WHO_AM_I\n");
-        return false;
-    }
+    // if (!ism330dhcx_read_reg(i2c_port, device_addr, WHO_AM_I, &id)) {
+        // printf("Failed to read WHO_AM_I\n");
+        // return false;
+    // }
 
-    if (id != ISM330DHCX_ID) {
-        printf("Wrong device ID: 0x%02X (expected 0x%02X)\n", id, ISM330DHCX_ID);
-        return false;
-    }
+    // if (id != ISM330DHCX_ID) {
+        // printf("Wrong device ID: 0x%02X (expected 0x%02X)\n", id, ISM330DHCX_ID);
+        // return false;
+    // }
 
     // Configure accelerometer 
-    // ODR = 104 Hz, ±2g, Anti-aliasing filter bandwidth = 100 Hz
-    if (!ism330dhcx_write_reg(i2c_port, device_addr, CTRL1_XL, 0x40)) {
+    // ODR = 6.66 Hz, ±2g
+    uint8_t xl_cntrl1_val = XL_ODR | XL_G_RANGE;
+    if (!ism330dhcx_write_reg(i2c_port, device_addr, CTRL1_XL, xl_cntrl_val)) {
         printf("Failed to configure accelerometer\n");
         return false;
     }
     
     // Configure gyroscope
-    // ODR = 104 Hz, ±250 dps
-    if (!ism330dhcx_write_reg(i2c_port, device_addr, CTRL2_G, 0x40)) {
+    // ODR = 6.66 kHz, ±250 dps
+    uint8_t g_cntrl_val = G_ODR | G_DPS_RANGE_MASK;
+    printf("Gyro control value: %d\n", g_cntrl_val);
+    if (!ism330dhcx_write_reg(i2c_port, device_addr, CTRL2_G, G_ODR | G_DPS_RANGE_MASK)) {
         printf("Failed to configure gyroscope\n");
         return false;
     }
@@ -158,18 +153,13 @@ int main() {
     
     
     // Initialize sensors
-    if (!ism330dhcx_init(I2C_PORT_0, ISM330DHCX_ADDR_DO_LOW)) {
-        printf("Failed to initialize ISM330DHCX with i2c_port: %s and i2c_address: 0x%02x!\n", I2C_PORT_0, ISM330DHCX_ADDR_DO_LOW);
-        while (1) {
-            sleep_ms(1000);
-        }
-    }
-    if (!ism330dhcx_init(I2C_PORT_0, ISM330DHCX_ADDR_DO_HIGH)) {
-        printf("Failed to initialize ISM330DHCX with i2c_port: %s and i2c_address: 0x%02x!\n", I2C_PORT_0, ISM330DHCX_ADDR_DO_HIGH);
-        while (1) {
-            sleep_ms(1000);
-        }
-    }    
+    // if (!ism330dhcx_init(I2C_PORT_0, ISM330DHCX_ADDR_DO_LOW)) {
+        // printf("Failed to initialize ISM330DHCX with i2c_port: %s and i2c_address: 0x%02x!\n", I2C_PORT_0, ISM330DHCX_ADDR_DO_LOW);
+        // while (1) {
+            // sleep_ms(1000);
+        // }
+    // }
+    
     if (!ism330dhcx_init(I2C_PORT_1, ISM330DHCX_ADDR_DO_LOW)) {
         printf("Failed to initialize ISM330DHCX with i2c_port: %s and i2c_address: 0x%02x!\n", I2C_PORT_1, ISM330DHCX_ADDR_DO_LOW);
         while (1) {
@@ -179,8 +169,8 @@ int main() {
     
     printf("Sensor initialized successfully!\n");
     printf("Starting data stream...\n");
-    i2c_scan(I2C_PORT_0);
-    i2c_scan(I2C_PORT_1);
+    // i2c_scan(I2C_PORT_0);
+    // i2c_scan(I2C_PORT_1);
 
 
     // Main loop

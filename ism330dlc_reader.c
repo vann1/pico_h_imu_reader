@@ -5,6 +5,7 @@
 #include "pico/binary_info.h"
 #include "hardware/i2c.h"
 #include "tusb.h"
+#include "ism330dlc_registers.h"
 
 // ISM330DHCX I2C address (SDO/SA0 pin low)
 #define ISM330DHCX_ADDR_DO_LOW 0x6A
@@ -12,15 +13,6 @@
 #define ISM330DHCX_ADDR_DO_HIGH 0x6B
 
 // Use 0x6B if SDO/SA0 pin is high
-
-// ISM330DHCX Register addresses
-#define WHO_AM_I 0x0F
-#define CTRL3_C 0x12 // THIS IS ONLY FOR TESTING, REMOVE AFTER
-#define CTRL1_XL 0x10  // Accelerometer control
-#define CTRL2_G 0x11   // Gyroscope control
-#define STATUS_REG 0x1E
-#define OUTX_L_G 0x22  // Gyroscope output registers
-#define OUTX_L_XL 0x28 // Accelerometer output registers
 
 // Expected WHO_AM_I value for ISM330DHCX
 #define ISM330DHCX_ID 0x6B
@@ -49,6 +41,24 @@ bool ism330dhcx_read_reg(i2c_inst_t *i2c_port, uint8_t device_addr, uint8_t reg,
     result = i2c_read_blocking(i2c_port, device_addr, value, 1, false);
     return result == 1;
 }
+
+bool ism330dhcx_read_gyro(i2c_inst_t* i2c_port, uint8_t device_addr, uint8_t* value) {
+	
+	
+	return 1;
+}
+
+bool ism330dhcx_read_accelerometer(i2c_inst_t* i2c_port, uint8_t device_addr, uint8_t reg, uint8_t* value) {
+	return 1;
+}
+
+bool ism330dhcx_read(i2c_inst_t* i2c_port, uint8_t device_addr, uint8_t reg, uint8_t* value) {
+	// ism330dhcx_read_accelerometer();
+	// ism330dhcx_read_gyro();
+	return 0;
+}
+
+
 
 // Function to read multiple bytes
 bool ism330dhcx_read_bytes(i2c_inst_t *i2c_port, uint8_t device_addr, uint8_t reg, uint8_t *buffer, uint8_t len) {
@@ -130,7 +140,7 @@ int main() {
     }
     //Scan i2c devices
 
-
+	printf("ism register CTRL3_C: %d\n", CTRL3_C);
     // Initialize i2c0 bus and gpio pins
     i2c_init(I2C_PORT_0, 100*1000);
     gpio_set_function(I2C_SDA_0, GPIO_FUNC_I2C);

@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e 
+# set -e
 
 echo "Configuring cmake..."
 cmake -S . -B build 

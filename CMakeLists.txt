@@ -3,11 +3,10 @@ cmake_minimum_required(VERSION 3.28)
 
 # initialize pico-sdk from submodule
 # note: this must happen before project()
-include(pico_sdk_import.cmake)
+include(pico-sdk/pico_sdk_init.cmake)
 
 project(ism330dlc_reader)
-
-
+add_subdirectory(src)
 # Disable automatic picotool installation
 set(PICO_NO_PICOTOOL 1)
 
@@ -26,6 +25,7 @@ target_link_libraries(
     ism330dlc_reader
     pico_stdlib
     hardware_i2c
+    ism330dlc
 )
 
 # enable usb output, disable uart output

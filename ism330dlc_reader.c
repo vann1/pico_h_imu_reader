@@ -110,8 +110,8 @@ bool ism330dhcx_init(i2c_inst_t *i2c_port, uint8_t device_addr) {
 
     // Configure accelerometer 
     // ODR = 6.66 Hz, ±2g
-    uint8_t xl_cntrl1_val = XL_ODR | XL_G_RANGE;
-    if (!ism330dhcx_write_reg(i2c_port, device_addr, CTRL1_XL, xl_cntrl_val)) {
+    uint8_t xl_cntrl1_val = XL_ODR | XL_G_RANGE_MASK;
+    if (!ism330dhcx_write_reg(i2c_port, device_addr, CTRL1_XL, xl_cntrl1_val)) {
         printf("Failed to configure accelerometer\n");
         return false;
     }

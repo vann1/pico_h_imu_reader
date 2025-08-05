@@ -34,9 +34,9 @@ bool ism330dhcx_read_reg(i2c_inst_t *i2c_port, uint8_t device_addr, uint8_t reg,
     return result == 1;
 }
 
-bool ism330dhcx_read_gyro(i2c_inst_t* i2c_port, uint8_t device_addr, uint8_t* value) {
+bool ism330dhcx_read_gyro(i2c_inst_t* i2c_port, uint8_t device_addr) {
     uint8_t raw_gyro_values[6];
-	ism330dhcx_read_reg(i2c_port, device_addr, raw_gyro_values , value,6);
+	ism330dhcx_read_reg(i2c_port, device_addr, OUTX_L_G ,raw_gyro_values ,6);
 	printf("gyro[0]: %d, gyro[5]: %d \n",raw_gyro_values[0],raw_gyro_values[5]);
 	return 1;
 }
@@ -176,7 +176,7 @@ int main() {
 
     // Main loop
     while (1) {
-        ism330dhcx_read_gyro();
+        ism330dhcx_read_gyro(I2C_PORT_0,ISM330DHCX_ADDR_DO_LOW);
         continue;
     }
     

@@ -1,5 +1,4 @@
-*.txt
-!.CMakeLists.txt
+sus.txt
 .vscode
 build
 pico_sdk_import.cmake

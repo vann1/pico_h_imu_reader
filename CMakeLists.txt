@@ -8,7 +8,7 @@ include(pico-sdk/pico_sdk_init.cmake)
 project(ism330dlc_reader)
 add_subdirectory(src)
 # Disable automatic picotool installation
-set(PICO_NO_PICOTOOL 1)
+# set(PICO_NO_PICOTOOL 1)
 
 message(STATUS "PICO_SDK_PATH is: ${PICO_SDK_PATH}")
 

@@ -27,16 +27,17 @@ bool ism330dhcx_write_reg(i2c_inst_t *i2c_port, uint8_t device_addr, uint8_t reg
 }
 
 // Function to read from ISM330DHCX register
-bool ism330dhcx_read_reg(i2c_inst_t *i2c_port, uint8_t device_addr, uint8_t reg, uint8_t *value) {
+bool ism330dhcx_read_reg(i2c_inst_t *i2c_port, uint8_t device_addr, uint8_t reg, uint8_t* value, uint8_t read_count) {
     int result = i2c_write_blocking(i2c_port, device_addr, &reg, 1, true);
     if (result != 1) return false;
-    result = i2c_read_blocking(i2c_port, device_addr, value, 1, false);
+    result = i2c_read_blocking(i2c_port, device_addr, value, read_count, false);
     return result == 1;
 }
 
 bool ism330dhcx_read_gyro(i2c_inst_t* i2c_port, uint8_t device_addr, uint8_t* value) {
-	
-	
+    uint8_t raw_gyro_values[6];
+	ism330dhcx_read_reg(i2c_port, device_addr, raw_gyro_values , value,6);
+	printf("gyro[0]: %d, gyro[5]: %d \n",raw_gyro_values[0],raw_gyro_values[5]);
 	return 1;
 }
 
@@ -52,14 +53,14 @@ bool ism330dhcx_read(i2c_inst_t* i2c_port, uint8_t device_addr, uint8_t reg, uin
 
 
 
-// Function to read multiple bytes
-bool ism330dhcx_read_bytes(i2c_inst_t *i2c_port, uint8_t device_addr, uint8_t reg, uint8_t *buffer, uint8_t len) {
-    // i2c_write_blocking is like waking call for reading the actual data, when nostop parameter is True
-    int result = i2c_write_blocking(i2c_port, device_addr, &reg, 1, true);
-    if (result != 1) return false;
-    result = i2c_read_blocking(i2c_port, device_addr, buffer, len, false);
-    return result == len;
-}
+// // Function to read multiple bytes
+// bool ism330dhcx_read_bytes(i2c_inst_t *i2c_port, uint8_t device_addr, uint8_t reg, uint8_t *buffer, uint8_t len) {
+//     // i2c_write_blocking is like waking call for reading the actual data, when nostop parameter is True
+//     int result = i2c_write_blocking(i2c_port, device_addr, &reg, 1, true);
+//     if (result != 1) return false;
+//     result = i2c_read_blocking(i2c_port, device_addr, buffer, len, false);
+//     return result == len;
+// }
 
 bool reserved_addr(uint8_t addr) {
     return (addr & 0x78) == 0 || (addr & 0x78) == 0x78;
@@ -175,6 +176,7 @@ int main() {
 
     // Main loop
     while (1) {
+        ism330dhcx_read_gyro();
         continue;
     }
     

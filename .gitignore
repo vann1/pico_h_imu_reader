@@ -6,4 +6,4 @@ sandbox.py
 /tmp*
 pico-sdk
 ISM330DHCX-PID/
-
+build_and_run_mount.sh

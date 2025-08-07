@@ -32,8 +32,8 @@ target_link_libraries(
 )
 
 # enable usb output, disable uart output
-pico_enable_stdio_usb(ism330dlc_reader 1)
-pico_enable_stdio_uart(ism330dlc_reader 0)
+pico_enable_stdio_usb(main 1)
+pico_enable_stdio_uart(main 0)
 
 # create map/bin/hex/uf2 file in addition to ELF.
-pico_add_extra_outputs(ism330dlc_reader)
+pico_add_extra_outputs(main)

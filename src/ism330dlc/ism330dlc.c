@@ -1,3 +1,5 @@
+#include "ism330dlc.h"
+#include "i2c_helpers.h"
 // Function to write to ISM330DHCX register
 bool ism330dhcx_write_reg(i2c_inst_t *i2c_port, uint8_t device_addr, uint8_t reg, uint8_t value) {
     uint8_t buf[2] = {reg, value};
@@ -32,10 +34,6 @@ bool ism330dhcx_read_gyro(i2c_inst_t* i2c_port, uint8_t device_addr) {
     float gyro_z = ((float)raw_gyro_z/32768.0f)*(float)G_DPS_RANGE;
 
 	printf("gyro_x: %f, gyro_y: %f, gyro_z: %f \n",gyro_x, gyro_y, gyro_z);
-	return 1;
-}
-
-bool ism330dhcx_read_accelerometer(i2c_inst_t* i2c_port, uint8_t device_addr, uint8_t reg, uint8_t* value) {
 	return 1;
 }
 
@@ -86,4 +84,19 @@ int initialize_sensors(void) {
            // printf("Failed to initialize ISM330DHCX with i2c_port: %s and i2c_address: 0x%02x!\n", I2C_PORT_1, ISM330DHCX_ADDR_DO_HIGH);
        // }
        printf("Sensor initialized successfully!\n");
+}
+
+bool ism330dhcx_read_accelerometer(i2c_inst_t* i2c_port, uint8_t device_addr) {
+    uint8_t raw_acc_values[6];
+	ism330dhcx_read_reg(i2c_port, device_addr, OUTX_L_XL ,raw_acc_values ,6);
+    int16_t raw_acc_x = combine_8_bits(raw_acc_values[0], raw_acc_values[1]);
+    int16_t raw_acc_y = combine_8_bits(raw_acc_values[2], raw_acc_values[3]);
+    int16_t raw_acc_z = combine_8_bits(raw_acc_values[4], raw_acc_values[5]);
+
+    float acc_x = ((float)raw_acc_x/32768.0f)*(float)XL_G_RANGE;
+    float acc_y = ((float)raw_acc_y/32768.0f)*(float)XL_G_RANGE;
+    float acc_z = ((float)raw_acc_z/32768.0f)*(float)XL_G_RANGE;
+
+	printf("acc_x: %f, acc_y: %f, acc_z: %f \n",acc_x, acc_y, acc_z);
+	return 1;
 }

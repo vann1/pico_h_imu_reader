@@ -1,5 +1,6 @@
 #include "ism330dlc.h"
 #include "i2c_helpers.h"
+#include "tusb.h"
 
 int main() {
     stdio_init_all();

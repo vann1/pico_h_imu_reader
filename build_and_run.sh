@@ -9,6 +9,6 @@ cd build
 echo "Building project..."
 make
 
-echo "Build completed successufully"
+echo "Build completed successufully."
 
 cd ..

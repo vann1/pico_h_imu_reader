@@ -47,13 +47,24 @@ bool ism330dhcx_read_gyro(i2c_inst_t* i2c_port, uint8_t device_addr) {
 	return 1;
 }
 
-bool ism330dhcx_read_accelerometer(i2c_inst_t* i2c_port, uint8_t device_addr, uint8_t reg, uint8_t* value) {
+bool ism330dhcx_read_accelerometer(i2c_inst_t* i2c_port, uint8_t device_addr) {
+    uint8_t raw_acc_values[6];
+	ism330dhcx_read_reg(i2c_port, device_addr, OUTX_L_XL ,raw_acc_values ,6);
+    int16_t raw_acc_x = combine_8_bits(raw_acc_values[0], raw_acc_values[1]);
+    int16_t raw_acc_y = combine_8_bits(raw_acc_values[2], raw_acc_values[3]);
+    int16_t raw_acc_z = combine_8_bits(raw_acc_values[4], raw_acc_values[5]);
+
+    float acc_x = ((float)raw_acc_x/32768.0f)*(float)XL_G_RANGE;
+    float acc_y = ((float)raw_acc_y/32768.0f)*(float)XL_G_RANGE;
+    float acc_z = ((float)raw_acc_z/32768.0f)*(float)XL_G_RANGE;
+
+	printf("acc_x: %f, acc_y: %f, acc_z: %f \n",acc_x, acc_y, acc_z);
 	return 1;
 }
 
-bool ism330dhcx_read(i2c_inst_t* i2c_port, uint8_t device_addr, uint8_t reg, uint8_t* value) {
-	// ism330dhcx_read_accelerometer();
-	// ism330dhcx_read_gyro();
+bool ism330dhcx_read(i2c_inst_t* i2c_port, uint8_t device_addr) {
+	ism330dhcx_read_accelerometer(i2c_port,device_addr);
+	ism330dhcx_read_gyro(i2c_port,device_addr);
 	return 0;
 }
 
@@ -135,9 +146,8 @@ int main() {
     // Main loop
 
     while (1) {
-
+        ism330dhcx_read(I2C_PORT_1,ISM330DHCX_ADDR_DO_LOW);
         sleep_ms(1000);
-        ism330dhcx_read_gyro(I2C_PORT_1,ISM330DHCX_ADDR_DO_LOW);
     }
     
     return 0;

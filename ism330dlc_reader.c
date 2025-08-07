@@ -7,8 +7,7 @@
 #include "tusb.h"
 #include "ism330dlc_registers.h"
 #include "ism330dlc_config.h"
-
-
+#include "bit_ops.h"
 // I2C(0) configuration
 #define I2C_PORT_0 i2c0
 #define I2C_SDA_0 0
@@ -37,7 +36,11 @@ bool ism330dhcx_read_reg(i2c_inst_t *i2c_port, uint8_t device_addr, uint8_t reg,
 bool ism330dhcx_read_gyro(i2c_inst_t* i2c_port, uint8_t device_addr) {
     uint8_t raw_gyro_values[6];
 	ism330dhcx_read_reg(i2c_port, device_addr, OUTX_L_G ,raw_gyro_values ,6);
-	printf("gyro[0]: %d, gyro[5]: %d \n",raw_gyro_values[0],raw_gyro_values[5]);
+    int16_t gyro_x = combine_8_bits(raw_gyro_values[0], raw_gyro_values[1]);
+    int16_t gyro_y = combine_8_bits(raw_gyro_values[2], raw_gyro_values[3]);
+    int16_t gyro_z = combine_8_bits(raw_gyro_values[4], raw_gyro_values[5]);
+
+	printf("gyro_x: %d, gyro_y: %d, gyro_z: %d \n",gyro_x, gyro_y, gyro_z);
 	return 1;
 }
 
@@ -175,9 +178,10 @@ int main() {
 
 
     // Main loop
+
     while (1) {
+        sleep_ms(500);
         ism330dhcx_read_gyro(I2C_PORT_0,ISM330DHCX_ADDR_DO_LOW);
-        continue;
     }
     
     return 0;

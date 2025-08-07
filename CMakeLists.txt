@@ -26,6 +26,7 @@ target_link_libraries(
     pico_stdlib
     hardware_i2c
     ism330dlc
+    utils
 )
 
 # enable usb output, disable uart output

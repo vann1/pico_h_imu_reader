@@ -16,13 +16,13 @@ message(STATUS "PICO_SDK_PATH is: ${PICO_SDK_PATH}")
 pico_sdk_init()
 
 # rest of your project
-add_executable(ism330dlc_reader
-    ism330dlc_reader.c
+add_executable(main
+    main.c
 )
 
 # Add pico_stdlib library which aggregates commonly used features
 target_link_libraries(
-    ism330dlc_reader
+    main
     pico_stdlib
     hardware_i2c
     ism330dlc

@@ -27,6 +27,7 @@ target_link_libraries(
     hardware_i2c
     ism330dlc
     utils
+    Fusion
 )
 
 # enable usb output, disable uart output

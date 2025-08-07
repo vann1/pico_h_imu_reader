@@ -32,15 +32,26 @@ bool ism330dhcx_read_reg(i2c_inst_t *i2c_port, uint8_t device_addr, uint8_t reg,
     result = i2c_read_blocking(i2c_port, device_addr, value, read_count, false);
     return result == 1;
 }
+void print_list(uint8_t list[], int size){
+    printf("Raw gyro values: ");
+    for (int i = 0; i < size; i++){
+        printf("%d ", list[i]);
+    }
+    printf("\n");
+}
 
 bool ism330dhcx_read_gyro(i2c_inst_t* i2c_port, uint8_t device_addr) {
     uint8_t raw_gyro_values[6];
 	ism330dhcx_read_reg(i2c_port, device_addr, OUTX_L_G ,raw_gyro_values ,6);
-    int16_t gyro_x = combine_8_bits(raw_gyro_values[0], raw_gyro_values[1]);
-    int16_t gyro_y = combine_8_bits(raw_gyro_values[2], raw_gyro_values[3]);
-    int16_t gyro_z = combine_8_bits(raw_gyro_values[4], raw_gyro_values[5]);
+    int16_t raw_gyro_x = combine_8_bits(raw_gyro_values[0], raw_gyro_values[1]);
+    int16_t raw_gyro_y = combine_8_bits(raw_gyro_values[2], raw_gyro_values[3]);
+    int16_t raw_gyro_z = combine_8_bits(raw_gyro_values[4], raw_gyro_values[5]);
 
-	printf("gyro_x: %d, gyro_y: %d, gyro_z: %d \n",gyro_x, gyro_y, gyro_z);
+    float gyro_x = ((float)raw_gyro_x/32768.0f)*(float)G_DPS_RANGE;
+    float gyro_y = ((float)raw_gyro_y/32768.0f)*(float)G_DPS_RANGE;
+    float gyro_z = ((float)raw_gyro_z/32768.0f)*(float)G_DPS_RANGE;
+
+	printf("gyro_x: %f, gyro_y: %f, gyro_z: %f \n",gyro_x, gyro_y, gyro_z);
 	return 1;
 }
 
@@ -180,8 +191,8 @@ int main() {
     // Main loop
 
     while (1) {
-        sleep_ms(500);
-        ism330dhcx_read_gyro(I2C_PORT_0,ISM330DHCX_ADDR_DO_LOW);
+        sleep_ms(1000);
+        ism330dhcx_read_gyro(I2C_PORT_1,ISM330DHCX_ADDR_DO_LOW);
     }
     
     return 0;

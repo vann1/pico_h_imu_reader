@@ -8,6 +8,7 @@
 #include "ism330dlc_registers.h"
 #include "ism330dlc_config.h"
 #include "bit_ops.h"
+#include "i2c_helpers.h"
 // I2C(0) configuration
 #define I2C_PORT_0 i2c0
 #define I2C_SDA_0 0

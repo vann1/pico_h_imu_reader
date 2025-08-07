@@ -1,3 +1,5 @@
+#include "i2c_helpers.h"
+
 bool reserved_addr(uint8_t addr) {
     return (addr & 0x78) == 0 || (addr & 0x78) == 0x78;
 }
@@ -32,14 +34,14 @@ void i2c_scan(i2c_inst_t *i2c_port) {
 int setup_I2C_pins() {
     // Initialize i2c0 bus and gpio pins
     int BAUD_RATE = 100*1000;
-    uint result = i2c_init(I2C_PORT_0, BAUD_RATE);
+    int result = i2c_init(I2C_PORT_0, BAUD_RATE);
     if (result != BAUD_RATE) return 0;
     gpio_set_function(I2C_SDA_0, GPIO_FUNC_I2C);
     gpio_set_function(I2C_SCL_0, GPIO_FUNC_I2C);
     gpio_pull_up(I2C_SDA_0);
     gpio_pull_up(I2C_SCL_0);
     // Initialize i2c1 bus and gpio pins
-    uint result = i2c_init(I2C_PORT_1, BAUD_RATE);
+    result = i2c_init(I2C_PORT_1, BAUD_RATE);
     if (result != BAUD_RATE) return 0;
     gpio_set_function(I2C_SDA_1, GPIO_FUNC_I2C);
     gpio_set_function(I2C_SCL_1, GPIO_FUNC_I2C);

@@ -9,15 +9,6 @@
 #include "ism330dlc_config.h"
 #include "bit_ops.h"
 #include "i2c_helpers.h"
-// I2C(0) configuration
-#define I2C_PORT_0 i2c0
-#define I2C_SDA_0 0
-#define I2C_SCL_0 1
-
-// I2C(1) configuration
-#define I2C_PORT_1 i2c1
-#define I2C_SDA_1 2
-#define I2C_SCL_1 3
 
 // Function to write to ISM330DHCX register
 bool ism330dhcx_write_reg(i2c_inst_t *i2c_port, uint8_t device_addr, uint8_t reg, uint8_t value) {
@@ -138,13 +129,13 @@ int main() {
 	initialize_sensors();    
     
     printf("Starting data stream...\n");
-    // i2c_scan(I2C_PORT_0);
-    // i2c_scan(I2C_PORT_1);
+    i2c_scan(I2C_PORT_1);
 
 
     // Main loop
 
     while (1) {
+
         sleep_ms(1000);
         ism330dhcx_read_gyro(I2C_PORT_1,ISM330DHCX_ADDR_DO_LOW);
     }

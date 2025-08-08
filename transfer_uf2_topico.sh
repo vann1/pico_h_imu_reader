@@ -1,5 +1,8 @@
 #!/bin/bash
 
+
+sudo mkdir -p /mnt/d
+
 sudo mount -t drvfs D: /mnt/d
 echo "Mountattiin D: levy"
 

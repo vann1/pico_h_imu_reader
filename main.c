@@ -60,8 +60,8 @@ int main() {
         FusionVector accelerometer = {0.0f, 0.0f, 1.0f}; // replace this with actual accelerometer data in g
 
         //Read gyro and acc values
-        ism330dhcx_read_accelerometer(I2C_PORT_1,ISM330DHCX_ADDR_DO_LOW, accelerometer);
-        ism330dhcx_read_gyro(I2C_PORT_1,ISM330DHCX_ADDR_DO_LOW, gyroscope);
+        ism330dhcx_read_accelerometer(I2C_PORT_1,ISM330DHCX_ADDR_DO_LOW, &accelerometer);
+        ism330dhcx_read_gyro(I2C_PORT_1,ISM330DHCX_ADDR_DO_LOW, &gyroscope);
         // Apply calibration
         gyroscope = FusionCalibrationInertial(gyroscope, gyroscopeMisalignment, gyroscopeSensitivity, gyroscopeOffset);
         accelerometer = FusionCalibrationInertial(accelerometer, accelerometerMisalignment, accelerometerSensitivity, accelerometerOffset);
@@ -80,7 +80,7 @@ int main() {
         // Print algorithm outputs
         const FusionEuler euler = FusionQuaternionToEuler(FusionAhrsGetQuaternion(&ahrs));
         const FusionVector earth = FusionAhrsGetEarthAcceleration(&ahrs);
-
+        const FusionQuaternion quat = FusionAhrsGetQuaternion(&ahrs);
         printf("Roll %0.1f, Pitch %0.1f, Yaw %0.1f, X %0.1f, Y %0.1f, Z %0.1f\n",
                euler.angle.roll, euler.angle.pitch, euler.angle.yaw,
                earth.axis.x, earth.axis.y, earth.axis.z);

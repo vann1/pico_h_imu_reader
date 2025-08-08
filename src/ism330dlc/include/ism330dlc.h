@@ -7,6 +7,8 @@
 #include "ism330dlc_registers.h"
 #include "ism330dlc_config.h"
 #include "bit_ops.h"
+#include "FusionMath.h"
+
 
 bool ism330dhcx_write_reg(i2c_inst_t *i2c_port, uint8_t device_addr, uint8_t reg, uint8_t value);
 bool ism330dhcx_read_reg(i2c_inst_t *i2c_port, uint8_t device_addr, uint8_t reg, uint8_t* value, uint8_t read_count);

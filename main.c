@@ -8,6 +8,42 @@
 
 #define SAMPLE_RATE (20) // replace this with actual sample rate
 #define SLEEP_DURATION(hz) (float)(1.0f/hz * 1000.0f)
+#define SENSOR_COUNT 4
+
+typedef struct FusionCalibration {
+    FusionMatrix gyroscopeMisalignment;
+    FusionVector gyroscopeSensitivity;
+    FusionVector gyroscopeOffset;
+    FusionMatrix accelerometerMisalignment;
+    FusionVector accelerometerSensitivity;
+    FusionVector accelerometerOffset;
+} FusionCalibration;
+
+typedef struct Sensor {
+    FusionCalibration calibration;
+    FusionOffset offset;
+    FusionAhrs ahrs;
+} Sensor;
+
+void initialize_calibrations(FusionCalibration* calibrations) {
+    for (int i = 0; i<SENSOR_COUNT;i++) {
+        calibrations[i].gyroscopeMisalignment = (FusionMatrix){ 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f};
+        calibrations[i].gyroscopeSensitivity = (FusionVector){1.0f, 1.0f, 1.0f};
+        calibrations[i].gyroscopeOffset = (FusionVector) {0.0f, 0.0f, 0.0f};
+        calibrations[i].accelerometerMisalignment = (FusionMatrix) {1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f};
+        calibrations[i].accelerometerSensitivity = (FusionVector) {1.0f, 1.0f, 1.0f};
+        calibrations[i].accelerometerOffset = (FusionVector) {0.0f, 0.0f, 0.0f};
+    }
+}
+
+void initialize_algos(Sensor* sensors) {
+    // Initialise algorithms
+    FusionOffset offset;
+    FusionOffsetInitialise(&offset, SAMPLE_RATE);
+
+    FusionAhrs ahrs;
+    FusionAhrsInitialise(&ahrs);
+}
 
 int main() {
     stdio_init_all();
@@ -20,7 +56,11 @@ int main() {
 		printf("I2C pin setup failed");
 		return 1;
     }
-	initialize_sensors();    
+	initialize_sensors();
+    FusionCalibration calibrations[SENSOR_COUNT];
+    Sensor sensors[SENSOR_COUNT];
+    initialize_calibrations(calibrations); 
+    initialize_algos(sensors);   
     
     printf("Starting data stream...\n");
     i2c_scan(I2C_PORT_1);
@@ -36,9 +76,9 @@ int main() {
 
     // Initialise algorithms
     FusionOffset offset;
-    FusionAhrs ahrs;
-
     FusionOffsetInitialise(&offset, SAMPLE_RATE);
+
+    FusionAhrs ahrs;
     FusionAhrsInitialise(&ahrs);
 
     // Set AHRS algorithm settings

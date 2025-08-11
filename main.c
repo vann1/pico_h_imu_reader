@@ -7,6 +7,7 @@
 #include <time.h>
 
 #define SAMPLE_RATE (20) // replace this with actual sample rate
+#define SLEEP_DURATION(hz) (float)(1.0f/hz * 1000.0f)
 
 int main() {
     stdio_init_all();
@@ -81,10 +82,10 @@ int main() {
         const FusionEuler euler = FusionQuaternionToEuler(FusionAhrsGetQuaternion(&ahrs));
         const FusionVector earth = FusionAhrsGetEarthAcceleration(&ahrs);
         const FusionQuaternion quat = FusionAhrsGetQuaternion(&ahrs);
-        printf("y%0.1fyp%0.1fpr%0.1fr\n",
-               euler.angle.yaw, euler.angle.pitch, euler.angle.roll);
+        // printf("y%0.1fyp%0.1fpr%0.1fr\n",
+        //        euler.angle.yaw, euler.angle.pitch, euler.angle.roll);
 
-        sleep_ms(SAMPLE_RATE);
+        sleep_ms(SLEEP_DURATION((float)SAMPLE_RATE));
     }
     return 0;
 }

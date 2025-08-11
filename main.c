@@ -9,6 +9,7 @@
 #define SAMPLE_RATE (20) // replace this with actual sample rate
 #define SLEEP_DURATION(hz) (float)(1.0f/hz * 1000.0f)
 #define SENSOR_COUNT 4
+#define CHANNEL_COUNT 2
 
 typedef struct FusionCalibration {
     FusionMatrix gyroscopeMisalignment;
@@ -21,29 +22,67 @@ typedef struct FusionCalibration {
 
 typedef struct Sensor {
     FusionCalibration calibration;
-    FusionOffset offset;
     FusionAhrs ahrs;
+    FusionOffset offset;
+    FusionAhrsSettings settings;
+    FusionVector accelerometer;
+    FusionVector gyroscope;
+    clock_t previousTimestamp;
+    clock_t timestamp;
 } Sensor;
 
-void initialize_calibrations(FusionCalibration* calibrations) {
+void initialize_calibrations(Sensor* sensors) {
     for (int i = 0; i<SENSOR_COUNT;i++) {
-        calibrations[i].gyroscopeMisalignment = (FusionMatrix){ 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f};
-        calibrations[i].gyroscopeSensitivity = (FusionVector){1.0f, 1.0f, 1.0f};
-        calibrations[i].gyroscopeOffset = (FusionVector) {0.0f, 0.0f, 0.0f};
-        calibrations[i].accelerometerMisalignment = (FusionMatrix) {1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f};
-        calibrations[i].accelerometerSensitivity = (FusionVector) {1.0f, 1.0f, 1.0f};
-        calibrations[i].accelerometerOffset = (FusionVector) {0.0f, 0.0f, 0.0f};
+        sensors[i].calibration.gyroscopeMisalignment = (FusionMatrix){ 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f};
+        sensors[i].calibration.gyroscopeSensitivity = (FusionVector){1.0f, 1.0f, 1.0f};
+        sensors[i].calibration.gyroscopeOffset = (FusionVector) {0.0f, 0.0f, 0.0f};
+        sensors[i].calibration.accelerometerMisalignment = (FusionMatrix) {1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f};
+        sensors[i].calibration.accelerometerSensitivity = (FusionVector) {1.0f, 1.0f, 1.0f};
+        sensors[i].calibration.accelerometerOffset = (FusionVector) {0.0f, 0.0f, 0.0f};
     }
 }
 
 void initialize_algos(Sensor* sensors) {
-    // Initialise algorithms
-    FusionOffset offset;
-    FusionOffsetInitialise(&offset, SAMPLE_RATE);
-
-    FusionAhrs ahrs;
-    FusionAhrsInitialise(&ahrs);
+    for (int i = 0; i<SENSOR_COUNT;i++) {
+        FusionOffsetInitialise(&sensors[i].offset, SAMPLE_RATE);
+        FusionAhrsInitialise(&sensors[i].ahrs);
+            // Set AHRS algorithm settings
+        sensors[i].settings = (FusionAhrsSettings){
+                .convention = FusionConventionNwu,
+                .gain = 0.5f,
+                .gyroscopeRange = 250.0f, /* replace this with actual gyroscope range in degrees/s */
+                .accelerationRejection = 10.0f,
+                .magneticRejection = 10.0f,
+                .recoveryTriggerPeriod = 5 * SAMPLE_RATE, /* 5 seconds */
+        };
+        FusionAhrsSetSettings(&sensors[i].ahrs, &sensors[i].settings);
+    }
 }
+
+void read_all_sensors(Sensor* sensors) {
+    int index = 0;
+   for (int i = 0; i < CHANNEL_COUNT; i++) {
+        if(i == 0) {
+            ism330dhcx_read_accelerometer(I2C_PORT_0,ISM330DHCX_ADDR_DO_LOW, &sensors[index].accelerometer);
+            ism330dhcx_read_gyro(I2C_PORT_0,ISM330DHCX_ADDR_DO_LOW, &sensors[index].gyroscope);
+            sensors[index].timestamp = clock();
+            index++;
+            ism330dhcx_read_accelerometer(I2C_PORT_0,ISM330DHCX_ADDR_DO_HIGH, &sensors[index].accelerometer);
+            ism330dhcx_read_gyro(I2C_PORT_0,ISM330DHCX_ADDR_DO_HIGH, &sensors[index].gyroscope);
+            sensors[index].timestamp = clock();
+            index++;
+        } else if (i == 1) {
+            ism330dhcx_read_accelerometer(I2C_PORT_1,ISM330DHCX_ADDR_DO_LOW, &sensors[index].accelerometer);
+            ism330dhcx_read_gyro(I2C_PORT_1,ISM330DHCX_ADDR_DO_LOW, &sensors[index].gyroscope);
+            sensors[index].timestamp = clock();
+            index++;
+            ism330dhcx_read_accelerometer(I2C_PORT_1,ISM330DHCX_ADDR_DO_HIGH, &sensors[index].accelerometer);
+            ism330dhcx_read_gyro(I2C_PORT_1,ISM330DHCX_ADDR_DO_HIGH, &sensors[index].gyroscope);
+            sensors[index].timestamp = clock();
+        }
+   }
+}
+
 
 int main() {
     stdio_init_all();
@@ -56,72 +95,38 @@ int main() {
 		printf("I2C pin setup failed");
 		return 1;
     }
+
 	initialize_sensors();
-    FusionCalibration calibrations[SENSOR_COUNT];
+
     Sensor sensors[SENSOR_COUNT];
-    initialize_calibrations(calibrations); 
+    initialize_calibrations(sensors); 
     initialize_algos(sensors);   
     
     printf("Starting data stream...\n");
-    i2c_scan(I2C_PORT_1);
-   
-
-    // Define calibration (replace with actual calibration data if available)
-    const FusionMatrix gyroscopeMisalignment = {1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f};
-    const FusionVector gyroscopeSensitivity = {1.0f, 1.0f, 1.0f};
-    const FusionVector gyroscopeOffset = {0.0f, 0.0f, 0.0f};
-    const FusionMatrix accelerometerMisalignment = {1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f};
-    const FusionVector accelerometerSensitivity = {1.0f, 1.0f, 1.0f};
-    const FusionVector accelerometerOffset = {0.0f, 0.0f, 0.0f};
-
-    // Initialise algorithms
-    FusionOffset offset;
-    FusionOffsetInitialise(&offset, SAMPLE_RATE);
-
-    FusionAhrs ahrs;
-    FusionAhrsInitialise(&ahrs);
-
-    // Set AHRS algorithm settings
-    const FusionAhrsSettings settings = {
-            .convention = FusionConventionNwu,
-            .gain = 0.5f,
-            .gyroscopeRange = 250.0f, /* replace this with actual gyroscope range in degrees/s */
-            .accelerationRejection = 10.0f,
-            .magneticRejection = 10.0f,
-            .recoveryTriggerPeriod = 5 * SAMPLE_RATE, /* 5 seconds */
-    };
-    FusionAhrsSetSettings(&ahrs, &settings);
+    //i2c_scan(I2C_PORT_1);
 
     // This loop should repeat each time new gyroscope data is available
     while (true) {
-
-        // Acquire latest sensor data
-        const clock_t timestamp = clock(); // replace this with actual gyroscope timestamp
-        FusionVector gyroscope = {0.0f, 0.0f, 0.0f}; // replace this with actual gyroscope data in degrees/s
-        FusionVector accelerometer = {0.0f, 0.0f, 1.0f}; // replace this with actual accelerometer data in g
-
-        //Read gyro and acc values
-        ism330dhcx_read_accelerometer(I2C_PORT_1,ISM330DHCX_ADDR_DO_LOW, &accelerometer);
-        ism330dhcx_read_gyro(I2C_PORT_1,ISM330DHCX_ADDR_DO_LOW, &gyroscope);
+        read_all_sensors(sensors);
         // Apply calibration
-        gyroscope = FusionCalibrationInertial(gyroscope, gyroscopeMisalignment, gyroscopeSensitivity, gyroscopeOffset);
-        accelerometer = FusionCalibrationInertial(accelerometer, accelerometerMisalignment, accelerometerSensitivity, accelerometerOffset);
+        for (int i=0; i<SENSOR_COUNT;i++) {
+            sensors[i].gyroscope = FusionCalibrationInertial(sensors[i].gyroscope, sensors[i].calibration.gyroscopeMisalignment, sensors[i].calibration.gyroscopeSensitivity, sensors[i].calibration.gyroscopeOffset);
+            sensors[i].accelerometer = FusionCalibrationInertial(sensors[i].accelerometer, sensors[i].calibration.accelerometerMisalignment, sensors[i].calibration.accelerometerSensitivity, sensors[i].calibration.accelerometerOffset);
+            sensors[i].gyroscope = FusionOffsetUpdate(&sensors[i].offset, sensors[i].gyroscope);
 
-        // Update gyroscope offset correction algorithm
-        gyroscope = FusionOffsetUpdate(&offset, gyroscope);
+            const float deltaTime = (float) (sensors[i].timestamp - sensors[i].previousTimestamp) / (float) CLOCKS_PER_SEC;
+            sensors[i].previousTimestamp = sensors[i].timestamp;
 
-        // Calculate delta time (in seconds) to account for gyroscope sample clock error
-        static clock_t previousTimestamp;
-        const float deltaTime = (float) (timestamp - previousTimestamp) / (float) CLOCKS_PER_SEC;
-        previousTimestamp = timestamp;
+            FusionAhrsUpdateNoMagnetometer(&sensors[i].ahrs, sensors[i].gyroscope, sensors[i].accelerometer, deltaTime);
+            const FusionEuler euler = FusionQuaternionToEuler(FusionAhrsGetQuaternion(&sensors[i].ahrs));
+                    printf("y%0.1fyp%0.1fpr%0.1fr\n",
+               euler.angle.yaw, euler.angle.pitch, euler.angle.roll);
 
-        // Update gyroscope AHRS algorithm
-        FusionAhrsUpdateNoMagnetometer(&ahrs, gyroscope, accelerometer, deltaTime);
-
-        // Print algorithm outputs
-        const FusionEuler euler = FusionQuaternionToEuler(FusionAhrsGetQuaternion(&ahrs));
-        const FusionVector earth = FusionAhrsGetEarthAcceleration(&ahrs);
-        const FusionQuaternion quat = FusionAhrsGetQuaternion(&ahrs);
+        }
+        printf("---\n");
+        // const FusionEuler euler = FusionQuaternionToEuler(FusionAhrsGetQuaternion(&ahrs));
+        // const FusionVector earth = FusionAhrsGetEarthAcceleration(&ahrs);
+        // const FusionQuaternion quat = FusionAhrsGetQuaternion(&ahrs);
         // printf("y%0.1fyp%0.1fpr%0.1fr\n",
         //        euler.angle.yaw, euler.angle.pitch, euler.angle.roll);
 

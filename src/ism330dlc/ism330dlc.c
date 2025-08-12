@@ -15,6 +15,14 @@ bool ism330dhcx_read_reg(i2c_inst_t *i2c_port, uint8_t device_addr, uint8_t reg,
     result = i2c_read_blocking(i2c_port, device_addr, value, read_count, false);
     return result == 1;
 }
+
+bool bno055_read_reg(i2c_inst_t *i2c_port, uint8_t device_addr, uint8_t reg, uint8_t* value, uint8_t read_count) {
+    int result = i2c_write_blocking(i2c_port, device_addr, &reg, 1, true);
+    if (result != 1) return false;
+    result = i2c_read_blocking(i2c_port, device_addr, value, read_count, false);
+    return result == 1;
+}
+
 void print_list(uint8_t list[], int size){
     printf("Raw gyro values: ");
     for (int i = 0; i < size; i++){
@@ -95,5 +103,17 @@ bool ism330dhcx_read_accelerometer(i2c_inst_t* i2c_port, uint8_t device_addr, Fu
     fusion_vector->axis.x = ((float)raw_acc_x/32768.0f)*(float)XL_G_RANGE;
     fusion_vector->axis.y = ((float)raw_acc_y/32768.0f)*(float)XL_G_RANGE;
     fusion_vector->axis.z = ((float)raw_acc_z/32768.0f)*(float)XL_G_RANGE;
+	return 1;
+}
+
+bool bno055_read_magnetometer(i2c_inst_t* i2c_port, uint8_t device_addr, int16_t* raw_mags) {
+    uint8_t raw_magnetometer_values[6];
+	ism330dhcx_read_reg(i2c_port, device_addr, OUTX_L_XL ,raw_magnetometer_values ,6);
+    int16_t raw_acc_x = combine_8_bits(raw_magnetometer_values[0], raw_magnetometer_values[1]);
+    int16_t raw_acc_y = combine_8_bits(raw_magnetometer_values[2], raw_magnetometer_values[3]);
+    int16_t raw_acc_z = combine_8_bits(raw_magnetometer_values[4], raw_magnetometer_values[5]);
+    raw_mags[0] = raw_acc_x;
+    raw_mags[1] = raw_acc_y;
+    raw_mags[2] = raw_acc_z;
 	return 1;
 }

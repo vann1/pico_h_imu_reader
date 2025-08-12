@@ -47,7 +47,7 @@ void initialize_algos(Sensor* sensors) {
     for (int i = 0; i<SENSOR_COUNT;i++) {
         FusionOffsetInitialise(&sensors[i].offset, SAMPLE_RATE);
         FusionAhrsInitialise(&sensors[i].ahrs);
-            // Set AHRS algorithm settings
+        // Set AHRS algorithm settings
         sensors[i].settings = (FusionAhrsSettings){
                 .convention = FusionConventionNwu,
                 .gain = 0.5f,

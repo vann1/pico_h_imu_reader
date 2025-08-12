@@ -106,14 +106,14 @@ bool ism330dhcx_read_accelerometer(i2c_inst_t* i2c_port, uint8_t device_addr, Fu
 	return 1;
 }
 
-bool bno055_read_magnetometer(i2c_inst_t* i2c_port, uint8_t device_addr, int16_t* raw_mags) {
+bool bno055_read_magnetometer(i2c_inst_t* i2c_port, uint8_t device_addr, FusionVector* fusion_vector) {
     uint8_t raw_magnetometer_values[6];
 	ism330dhcx_read_reg(i2c_port, device_addr, OUTX_L_XL ,raw_magnetometer_values ,6);
     int16_t raw_acc_x = combine_8_bits(raw_magnetometer_values[0], raw_magnetometer_values[1]);
     int16_t raw_acc_y = combine_8_bits(raw_magnetometer_values[2], raw_magnetometer_values[3]);
     int16_t raw_acc_z = combine_8_bits(raw_magnetometer_values[4], raw_magnetometer_values[5]);
-    raw_mags[0] = raw_acc_x;
-    raw_mags[1] = raw_acc_y;
-    raw_mags[2] = raw_acc_z;
+    fusion_vector->axis.x = ((float)raw_acc_x/32768.0f)*(float)XL_G_RANGE;
+    fusion_vector->axis.y = ((float)raw_acc_y/32768.0f)*(float)XL_G_RANGE;
+    fusion_vector->axis.z = ((float)raw_acc_z/32768.0f)*(float)XL_G_RANGE;
 	return 1;
 }

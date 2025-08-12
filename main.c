@@ -29,6 +29,7 @@ typedef struct Sensor {
     FusionVector gyroscope;
     clock_t previousTimestamp;
     clock_t timestamp;
+    FusionVector magnetometer;
 } Sensor;
 
 void initialize_calibrations(Sensor* sensors) {
@@ -63,8 +64,7 @@ void read_all_sensors(Sensor* sensors) {
     int index = 0;
    for (int i = 0; i < CHANNEL_COUNT; i++) {
         if(i == 0) {
-            ism330dhcx_read_accelerometer(I2C_PORT_0,0x4A, &sensors[index].accelerometer);
-            ism330dhcx_read_gyro(I2C_PORT_0,0x4A, &sensors[index].gyroscope);
+            bno055_read_reg(I2C_PORT_0,0x4A, &sensors[index].magnetometer);
             sensors[index].timestamp = clock();
             index++;
             ism330dhcx_read_accelerometer(I2C_PORT_0,ISM330DHCX_ADDR_DO_HIGH, &sensors[index].accelerometer);

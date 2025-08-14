@@ -43,9 +43,6 @@ static void i2c_close(sh2_Hal_t* pInstance) {
 
 // HAL: Read I2C data
 static int i2c_read(sh2_Hal_t* pInstance, uint8_t *pData, unsigned len, uint32_t *pTimestamp_us) {
-    // Add delay and bus check
-    sleep_ms(5);  // Give some time between operations
-
     // Wait for bus to be completely idle
     while (i2c_get_hw(I2C_PORT)->status & I2C_IC_STATUS_ACTIVITY_BITS) {
         tight_loop_contents();
@@ -62,9 +59,6 @@ static int i2c_read(sh2_Hal_t* pInstance, uint8_t *pData, unsigned len, uint32_t
 
 // HAL: Write I2C data
 static int i2c_write(sh2_Hal_t* pInstance, uint8_t *pData, unsigned len) {
-    // Add delay and bus check
-    sleep_ms(5);  // Give some time between operations
-
     // Wait for bus to be completely idle
     while (i2c_get_hw(I2C_PORT)->status & I2C_IC_STATUS_ACTIVITY_BITS) {
         tight_loop_contents();

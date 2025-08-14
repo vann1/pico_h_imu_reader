@@ -8,4 +8,5 @@ add_subdirectory(ism330dlc)
 add_subdirectory(utils)
 add_subdirectory(Fusion)
 add_subdirectory(i2c)
+add_subdirectory(read_ops)
  

@@ -2,7 +2,6 @@
 #define INITFUSION_H
 
 #include "Fusion.h"
-#include "i2c_helpers.h"
 #include <time.h>
 typedef struct FusionCalibration {
     FusionMatrix gyroscopeMisalignment;

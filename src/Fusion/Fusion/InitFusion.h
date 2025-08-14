@@ -3,26 +3,8 @@
 
 #include "Fusion.h"
 #include <time.h>
-typedef struct FusionCalibration {
-    FusionMatrix gyroscopeMisalignment;
-    FusionVector gyroscopeSensitivity;
-    FusionVector gyroscopeOffset;
-    FusionMatrix accelerometerMisalignment;
-    FusionVector accelerometerSensitivity;
-    FusionVector accelerometerOffset;
-} FusionCalibration;
-
-typedef struct Sensor {
-    FusionCalibration calibration;
-    FusionAhrs ahrs;
-    FusionOffset offset;
-    FusionAhrsSettings settings;
-    FusionVector accelerometer;
-    FusionVector gyroscope;
-    clock_t previousTimestamp;
-    clock_t timestamp;
-    FusionVector magnetometer;
-} Sensor;
+#include "FusionStructs.h"
+#include "i2c_helpers.h"
 
 void initialize_calibrations(Sensor* sensors);
 void initialize_algos(Sensor* sensors);

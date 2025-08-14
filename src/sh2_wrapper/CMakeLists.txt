@@ -7,6 +7,7 @@ target_link_libraries(sh2_wrapper
 PRIVATE
 pico_stdlib
 hardware_i2c
+i2c_helpers
 PUBLIC
 sh2
  )

@@ -7,6 +7,7 @@
 #include "sh2_SensorValue.h"
 #include "sh2_err.h"
 #include "sh2_hal.h"
+#include "i2c_helpers.h"
 
 static void clear_i2c_flags();
 static int i2c_open(sh2_Hal_t* pInstance);

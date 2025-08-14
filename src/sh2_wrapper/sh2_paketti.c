@@ -56,7 +56,6 @@ static int i2c_read(sh2_Hal_t* pInstance, uint8_t *pData, unsigned len, uint32_t
     return rc;
 }
 
-
 // HAL: Write I2C data
 static int i2c_write(sh2_Hal_t* pInstance, uint8_t *pData, unsigned len) {
     // Wait for bus to be completely idle
@@ -132,7 +131,10 @@ static void sh2_setSensorConfig_or_halt() {
     // Enable rotation vector (100 Hz)
     sh2_SensorConfig_t config;
     memset(&config, 0, sizeof(config));
-    config.reportInterval_us = 10000; // 10 ms = 100 Hz
+    float test = (1.0f/(float)SAMPLE_RATE) * 1000000.0f;
+    config.reportInterval_us = test; // 10 ms = 100 Hz
+    // TODO - add a global array rolling array and only take the latest value
+
     rc = sh2_setSensorConfig(SH2_ROTATION_VECTOR, &config);
     if (rc != SH2_OK) {
         printf("Config failed: %d\n", rc);

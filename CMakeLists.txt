@@ -31,6 +31,7 @@ target_link_libraries(
     i2c_helpers
     Fusion
     sh2_wrapper
+    read_ops
 )
 
 # enable usb output, disable uart output

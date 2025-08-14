@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <time.h>
+#include <sh2_paketti.h>
 
 #define SAMPLE_RATE (20) // replace this with actual sample rate
 #define SLEEP_DURATION(hz) (float)(1.0f/hz * 1000.0f)
@@ -64,8 +65,6 @@ void read_all_sensors(Sensor* sensors) {
     int index = 0;
    for (int i = 0; i < CHANNEL_COUNT; i++) {
         if(i == 0) {
-            ism330dhcx_read_accelerometer(I2C_PORT_0,ISM330DHCX_ADDR_DO_LOW, &sensors[index].accelerometer);
-            ism330dhcx_read_gyro(I2C_PORT_0,ISM330DHCX_ADDR_DO_LOW, &sensors[index].gyroscope);
             sensors[index].timestamp = clock();
             index++;
             ism330dhcx_read_accelerometer(I2C_PORT_0,ISM330DHCX_ADDR_DO_HIGH, &sensors[index].accelerometer);
@@ -90,48 +89,53 @@ int main() {
     while (!tud_cdc_connected()) {
         sleep_ms(100);
     }
-
-    int result = setup_I2C_pins();
-    if (result != 1) {
-		printf("I2C pin setup failed");
-		return 1;
+    setup_sh2_service();
+    printf("sh2 service has been setup\n");
+    for (int i = 0;i<10;i++) {
+        read_super_sensor();
     }
+    while(1);
+    // int result = setup_I2C_pins();
+    // if (result != 1) {
+	// 	printf("I2C pin setup failed");
+	// 	return 1;
+    // }
 
-	initialize_sensors();
+	// initialize_sensors();
 
-    Sensor sensors[SENSOR_COUNT];
-    initialize_calibrations(sensors); 
-    initialize_algos(sensors);   
+    // Sensor sensors[SENSOR_COUNT];
+    // initialize_calibrations(sensors); 
+    // initialize_algos(sensors);   
     
-    printf("Starting data stream...\n");
-    //i2c_scan(I2C_PORT_1);
+    // printf("Starting data stream...\n");
+    // //i2c_scan(I2C_PORT_1);
 
-    // This loop should repeat each time new gyroscope data is available
-    while (true) {
-        read_all_sensors(sensors);
-        // Apply calibration
-        for (int i=0; i<SENSOR_COUNT;i++) {
-            sensors[i].gyroscope = FusionCalibrationInertial(sensors[i].gyroscope, sensors[i].calibration.gyroscopeMisalignment, sensors[i].calibration.gyroscopeSensitivity, sensors[i].calibration.gyroscopeOffset);
-            sensors[i].accelerometer = FusionCalibrationInertial(sensors[i].accelerometer, sensors[i].calibration.accelerometerMisalignment, sensors[i].calibration.accelerometerSensitivity, sensors[i].calibration.accelerometerOffset);
-            sensors[i].gyroscope = FusionOffsetUpdate(&sensors[i].offset, sensors[i].gyroscope);
+    // // This loop should repeat each time new gyroscope data is available
+    // while (true) {
+    //     read_all_sensors(sensors);
+    //     // Apply calibration
+    //     for (int i=0; i<SENSOR_COUNT;i++) {
+    //         sensors[i].gyroscope = FusionCalibrationInertial(sensors[i].gyroscope, sensors[i].calibration.gyroscopeMisalignment, sensors[i].calibration.gyroscopeSensitivity, sensors[i].calibration.gyroscopeOffset);
+    //         sensors[i].accelerometer = FusionCalibrationInertial(sensors[i].accelerometer, sensors[i].calibration.accelerometerMisalignment, sensors[i].calibration.accelerometerSensitivity, sensors[i].calibration.accelerometerOffset);
+    //         sensors[i].gyroscope = FusionOffsetUpdate(&sensors[i].offset, sensors[i].gyroscope);
 
-            const float deltaTime = (float) (sensors[i].timestamp - sensors[i].previousTimestamp) / (float) CLOCKS_PER_SEC;
-            sensors[i].previousTimestamp = sensors[i].timestamp;
+    //         const float deltaTime = (float) (sensors[i].timestamp - sensors[i].previousTimestamp) / (float) CLOCKS_PER_SEC;
+    //         sensors[i].previousTimestamp = sensors[i].timestamp;
 
-            FusionAhrsUpdateNoMagnetometer(&sensors[i].ahrs, sensors[i].gyroscope, sensors[i].accelerometer, deltaTime);
-            const FusionEuler euler = FusionQuaternionToEuler(FusionAhrsGetQuaternion(&sensors[i].ahrs));
-                    printf("y%0.1fyp%0.1fpr%0.1fr\n",
-               euler.angle.yaw, euler.angle.pitch, euler.angle.roll);
+    //         FusionAhrsUpdateNoMagnetometer(&sensors[i].ahrs, sensors[i].gyroscope, sensors[i].accelerometer, deltaTime);
+    //         const FusionEuler euler = FusionQuaternionToEuler(FusionAhrsGetQuaternion(&sensors[i].ahrs));
+    //                 printf("y%0.1fyp%0.1fpr%0.1fr\n",
+    //            euler.angle.yaw, euler.angle.pitch, euler.angle.roll);
 
-        }
-        printf("---\n");
-        // const FusionEuler euler = FusionQuaternionToEuler(FusionAhrsGetQuaternion(&ahrs));
-        // const FusionVector earth = FusionAhrsGetEarthAcceleration(&ahrs);
-        // const FusionQuaternion quat = FusionAhrsGetQuaternion(&ahrs);
-        // printf("y%0.1fyp%0.1fpr%0.1fr\n",
-        //        euler.angle.yaw, euler.angle.pitch, euler.angle.roll);
+    //     }
+    //     printf("---\n");
+    //     // const FusionEuler euler = FusionQuaternionToEuler(FusionAhrsGetQuaternion(&ahrs));
+    //     // const FusionVector earth = FusionAhrsGetEarthAcceleration(&ahrs);
+    //     // const FusionQuaternion quat = FusionAhrsGetQuaternion(&ahrs);
+    //     // printf("y%0.1fyp%0.1fpr%0.1fr\n",
+    //     //        euler.angle.yaw, euler.angle.pitch, euler.angle.roll);
 
         sleep_ms(SLEEP_DURATION((float)SAMPLE_RATE));
-    }
+    // }
     return 0;
 }

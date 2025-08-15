@@ -51,7 +51,7 @@ int main() {
     
     // printf("Starting data stream...\n");
     i2c_scan(I2C_PORT_0);
-
+    
     while (true) {
         read_all_sensors(sensors);
         for (int i=0; i<SENSOR_COUNT;i++) {
@@ -78,9 +78,8 @@ int main() {
             sensors_data[SENSOR_COUNT][1] = sh2_vector_list.rolling_list[sh2_vector_list.cursor][1];
             sensors_data[SENSOR_COUNT][2] = sh2_vector_list.rolling_list[sh2_vector_list.cursor][2];
             sensors_data[SENSOR_COUNT][3] =sh2_vector_list.rolling_list[sh2_vector_list.cursor][3];
-            print_output_data();
+            // print_output_data();
             printf("---\n");
-
             sleep_ms(SLEEP_DURATION((float)SAMPLE_RATE));
         }   
     }

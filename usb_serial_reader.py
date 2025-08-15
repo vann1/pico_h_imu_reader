@@ -5,6 +5,8 @@ import sys
 import time
 
 
+BAUD_RATE = 115200
+
 def find_pico_port():
     """Try to find the Pico automatically"""
     import serial.tools.list_ports
@@ -19,10 +21,14 @@ def receive_pico_data():
     baud_rate = 115200
     counter = 0
 
+    
     try:
         ser = serial.Serial(port, baud_rate, timeout=1)
         print(f"Connected to {port} at {baud_rate} baud")
         start_time = time.time()
+        ser = serial.Serial(port, BAUD_RATE, timeout=1)
+        print(f"Connected to {port} at {BAUD_RATE} baud")
+        
         while True:
             
             
@@ -55,4 +61,8 @@ def receive_pico_data():
 
 
 if __name__ == "__main__":
+    print(len(sys.argv))
+    if len(sys.argv) > 1:
+        BAUD_RATE = 1200
+    print(BAUD_RATE)
     receive_pico_data()

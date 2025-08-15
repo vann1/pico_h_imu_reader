@@ -16,9 +16,12 @@ def find_pico_port():
             return port.device
     return '/dev/ttyACM0'
 
+    return '/dev/ttyACM0'
+
 def receive_pico_data():
     port = find_pico_port() 
     counter = 0
+
 
     try:
         ser = serial.Serial(port, baud_rate)

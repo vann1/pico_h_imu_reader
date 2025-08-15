@@ -1,5 +1,5 @@
 #include "sh2_paketti.h"
-
+#include <time.h>
 // I2C configuration
 #define I2C_PORT i2c0
 #define I2C_SDA 0 // GPIO4 (Pico pin 6)
@@ -48,6 +48,8 @@ static void i2c_close(sh2_Hal_t* pInstance) {
 
 // HAL: Read I2C data
 static int i2c_read(sh2_Hal_t* pInstance, uint8_t *pData, unsigned len, uint32_t *pTimestamp_us) {
+    clock_t start_time = clock();
+
     // Wait for bus to be completely idle
     // while (i2c_get_hw(I2C_PORT)->status & I2C_IC_STATUS_ACTIVITY_BITS) {
     //     tight_loop_contents();
@@ -56,6 +58,8 @@ static int i2c_read(sh2_Hal_t* pInstance, uint8_t *pData, unsigned len, uint32_t
     clear_i2c_flags();
 
     int rc = i2c_read_blocking(I2C_PORT, BNO08X_ADDR, pData, len, false);
+    float elapsed_time = clock() - start_time;
+    printf("Lukemisen aika: %.2f", elapsed_time);
     if (rc != len) return SH2_ERR;
     *pTimestamp_us = to_us_since_boot(get_absolute_time());
     return rc;
@@ -63,6 +67,7 @@ static int i2c_read(sh2_Hal_t* pInstance, uint8_t *pData, unsigned len, uint32_t
 
 // HAL: Write I2C data
 static int i2c_write(sh2_Hal_t* pInstance, uint8_t *pData, unsigned len) {
+    clock_t start_time = clock();
     // Wait for bus to be completely idle
     // while (i2c_get_hw(I2C_PORT)->status & I2C_IC_STATUS_ACTIVITY_BITS) {
     //     tight_loop_contents();
@@ -71,6 +76,8 @@ static int i2c_write(sh2_Hal_t* pInstance, uint8_t *pData, unsigned len) {
     clear_i2c_flags();
 
     int result = i2c_write_blocking(I2C_PORT, BNO08X_ADDR, pData, len, false);
+    float elapsed_time = clock() - start_time;
+    printf("Kirjoituksen aika: %.2f", elapsed_time);
     return (result == len) ? result : SH2_ERR;
 }
 

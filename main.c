@@ -88,6 +88,7 @@ int main() {
         float elapsed_time = clock() - start_time;
         counter++;
         if ((elapsed_time/ (float) CLOCKS_PER_SEC) >= 1) {
+            printf("adsada: %d\n", (elapsed_time/ (float) CLOCKS_PER_SEC));
             printf("cauntteri: %d", counter);
             counter = 0;
             start_time = clock();

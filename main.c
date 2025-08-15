@@ -51,7 +51,9 @@ int main() {
     
     // printf("Starting data stream...\n");
     i2c_scan(I2C_PORT_0);
-    
+    int counter = 0;
+    clock_t start_time = clock();
+
     while (true) {
         read_all_sensors(sensors);
         for (int i=0; i<SENSOR_COUNT;i++) {
@@ -72,6 +74,7 @@ int main() {
         read_super_sensor();
         if (sh2_vector_list.data_ready == false) {
             sleep_ms(1000);
+            sh2_vector_list.data_ready == true;
         } 
         else {
             sensors_data[SENSOR_COUNT][0] = sh2_vector_list.rolling_list[sh2_vector_list.cursor][0];
@@ -79,9 +82,16 @@ int main() {
             sensors_data[SENSOR_COUNT][2] = sh2_vector_list.rolling_list[sh2_vector_list.cursor][2];
             sensors_data[SENSOR_COUNT][3] =sh2_vector_list.rolling_list[sh2_vector_list.cursor][3];
             // print_output_data();
-            printf("---\n");
+            // printf("---\n");
             sleep_ms(SLEEP_DURATION((float)SAMPLE_RATE));
         }   
+        float elapsed_time = clock() - start_time;
+        counter++;
+        if ((elapsed_time/ (float) CLOCKS_PER_SEC) >= 1) {
+            printf("cauntteri: %d", counter);
+            counter = 0;
+            start_time = clock();
+        }
     }
     return 0;
 }

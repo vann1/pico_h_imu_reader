@@ -5,6 +5,8 @@ add_library(Fusion ${files})
 target_include_directories(Fusion INTERFACE .)
 
 target_link_libraries(Fusion
+PRIVATE 
+pico_stdlib
 PUBLIC
 i2c_helpers
  )

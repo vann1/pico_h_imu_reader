@@ -8,7 +8,7 @@
 #include "sh2_err.h"
 #include "sh2_hal.h"
 #include "i2c_helpers.h"
-
+#define SH_2_VECOTR_LIST_ROW_MAX 1024
 static void clear_i2c_flags();
 static int i2c_open(sh2_Hal_t* pInstance);
 static void i2c_close(sh2_Hal_t* pInstance);
@@ -25,4 +25,12 @@ static void initialize_HALL();
 static void wait_for_reset_or_halt();
 void setup_sh2_service();
 void read_super_sensor();
+typedef struct sh2_vector_list_t {
+    uint16_t cursor;
+    float rolling_list[SH_2_VECOTR_LIST_ROW_MAX][4];
+    bool data_ready;
+}sh2_vector_list_t;
+
+
+
 #endif // SH2_PAKETTI_H

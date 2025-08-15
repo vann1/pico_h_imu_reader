@@ -7,6 +7,11 @@
 #define I2C_BAUD 400000  // 400 kHz
 #define BNO08X_ADDR 0x4A  // BNO08x I2C address
 
+sh2_vector_list_t sh2_vector_list = {
+    .cursor = 0,
+    .data_ready = false
+};
+
 static sh2_Hal_t hal;
 static bool reset_received = false;
 static int rc;
@@ -76,18 +81,31 @@ static uint32_t get_time_us(sh2_Hal_t* pInstance) {
 
 // Sensor event callback
 static void sensor_handler(void *cookie, sh2_SensorEvent_t *event) {
+    uint16_t local_cursor = sh2_vector_list.cursor;
+    #define l sh2_vector_list.rolling_list
     sh2_SensorValue_t value;
     if (sh2_decodeSensorEvent(&value, event) == SH2_OK) {
         if (value.sensorId == SH2_ROTATION_VECTOR) {
-            printf("Rotation: w=%.6f, x=%.6f, y=%.6f, z=%.6f\n",
-                   value.un.rotationVector.real,
-                   value.un.rotationVector.i,
-                   value.un.rotationVector.j,
-                   value.un.rotationVector.k);
+            if (l[sh2_vector_list.cursor] >= SH_2_VECOTR_LIST_ROW_MAX || !sh2_vector_list.data_ready) {
+                local_cursor = 0;
+            }
+            else {
+                local_cursor++;
+            }
+            l[local_cursor][0] = value.un.rotationVector.real;
+            l[local_cursor][1] = value.un.rotationVector.i;
+            l[local_cursor][2] = value.un.rotationVector.j;
+            l[local_cursor][3] = value.un.rotationVector.k;
+            sh2_vector_list.cursor = local_cursor;
+            if(sh2_vector_list.data_ready == false) 
+            {
+               sh2_vector_list.data_ready = true; 
+            }
         }
     } else {
         printf("wrong event?\n");
     }
+    #undef l
 }
 
 // Async event callback

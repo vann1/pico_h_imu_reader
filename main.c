@@ -39,12 +39,8 @@ int main() {
 
     Sensor sensors[SENSOR_COUNT];
     initialize_calibrations(sensors); 
-    printf("calibrated\n");
     initialize_algos(sensors);   
-    printf("algoed!\n");
     
-    // printf("Starting data stream...\n");
-    i2c_scan(I2C_PORT_0);
     int counter = 0;
     clock_t start_time = clock();
 

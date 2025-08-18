@@ -28,12 +28,6 @@ int main() {
         sleep_ms(100);
     }
     setup_sh2_service();
-    // printf("sh2 service has been setup\n");
-    // for (int i = 0;i<10;i++) {
-    //     read_super_sensor();
-    // }
-    // while(1);
-
     int result = setup_I2C_pins();
 
     if (result != 1) {

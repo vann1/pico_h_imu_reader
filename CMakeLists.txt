@@ -26,6 +26,7 @@ target_link_libraries(
     main
     pico_stdlib
     hardware_i2c
+    hardware_spi
     ism330dlc
     utils
     i2c_helpers

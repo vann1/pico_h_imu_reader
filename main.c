@@ -63,7 +63,6 @@ int main() {
         }
         print_output_data();
         sleep_ms(SLEEP_DURATION((float)SAMPLE_RATE));
-
     }
     return 0;
 }

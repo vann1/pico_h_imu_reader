@@ -101,7 +101,6 @@ static void sh2_open_or_halt() {
     while (1);
 }
 }
-<<<<<<< HEAD
 
 void printEventWrapper(void * cookie, sh2_SensorEvent_t* event) {
     printEvent(event);
@@ -113,14 +112,6 @@ static void sh2_setSensorCallback_or_halt() {
         printf("Callback setup failed: %d\n", rc);
         sh2_close();
         while (1);
-=======
-static void sh2_setSensorCallback_or_halt() {
-    rc = sh2_setSensorCallback(sensor_handler, NULL);
-    if (rc != SH2_OK) {
-    printf("Callback setup failed: %d\n", rc);
-    sh2_close();
-    while (1);
->>>>>>> fe6542b (SPI version added)
     }
 }
 static void sh2_devReset_or_halt() {

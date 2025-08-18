@@ -79,7 +79,7 @@ int main() {
         counter++;
 
         if (elapsed_time >= 1) {
-            printf("adsada: %d\n", counter);
+            printf("main.c counter: %d\n", counter);
             counter = 0;
             start_time = clock();
         }

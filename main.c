@@ -72,8 +72,8 @@ int main() {
             sensors_data[SENSOR_COUNT][1] = sh2_vector_list.rolling_list[sh2_vector_list.cursor][1];
             sensors_data[SENSOR_COUNT][2] = sh2_vector_list.rolling_list[sh2_vector_list.cursor][2];
             sensors_data[SENSOR_COUNT][3] =sh2_vector_list.rolling_list[sh2_vector_list.cursor][3];
-            // print_output_data();
-            // printf("---\n");
+            print_output_data();
+            printf("---\n");
         }   
         float elapsed_time = (clock() - start_time)/ (float) CLOCKS_PER_SEC;
         counter++;

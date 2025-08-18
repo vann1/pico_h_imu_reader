@@ -134,8 +134,12 @@ static void sh2_open_or_halt() {
     }
 }
 
+void printEventWrapper(void * cookie, sh2_SensorEvent_t* event) {
+    printEvent(event);
+}
+
 static void sh2_setSensorCallback_or_halt() {
-    rc = sh2_setSensorCallback(printEvent, NULL);
+    rc = sh2_setSensorCallback(printEventWrapper, NULL);
     if (rc != SH2_OK) {
         printf("Callback setup failed: %d\n", rc);
         sh2_close();
@@ -155,7 +159,7 @@ static void sh2_devReset_or_halt() {
 }
 
 // Print a sensor event to the console
-static void printEvent(const sh2_SensorEvent_t * event)
+void printEvent(const sh2_SensorEvent_t * event)
 {
     int rc;
     sh2_SensorValue_t value;
@@ -163,6 +167,11 @@ static void printEvent(const sh2_SensorEvent_t * event)
     float r, i, j, k, acc_deg, x, y, z;
     float t;
     static int skip = 0;
+
+    if(sh2_vector_list.data_ready == false) 
+    {
+        sh2_vector_list.data_ready = true; 
+    }
 
     rc = sh2_decodeSensorEvent(&value, event);
     if (rc != SH2_OK) {

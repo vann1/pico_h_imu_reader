@@ -35,7 +35,7 @@ return SH2_OK;
 }
 // HAL: Close SPI
 static void spi_close(sh2_Hal_t* pInstance) {
-spi_deinit(SPI_INST);
+    spi_deinit(SPI_INST);
 }
 // HAL: Read SPI data
 static int spi_read(sh2_Hal_t* pInstance, uint8_t *pData, unsigned len, uint32_t *pTimestamp_us) {
@@ -46,6 +46,7 @@ static int spi_read(sh2_Hal_t* pInstance, uint8_t *pData, unsigned len, uint32_t
     pTimestamp_us = to_us_since_boot(get_absolute_time());
     return rc;
 }
+
 // HAL: Write SPI data
 static int spi_write(sh2_Hal_t pInstance, uint8_t pData, unsigned len) {
     gpio_put(SPI_CS, 0);
@@ -55,51 +56,52 @@ static int spi_write(sh2_Hal_t pInstance, uint8_t pData, unsigned len) {
 }
 // HAL: Get microsecond timestamp
 static uint32_t get_time_us(sh2_Hal_t pInstance) {
-return to_us_since_boot(get_absolute_time());
+    return to_us_since_boot(get_absolute_time());
 }
 // Sensor event callback
 static void sensor_handler(void *cookie, sh2_SensorEvent_t *event) {
-uint16_t local_cursor = sh2_vector_list.cursor;
-#define l sh2_vector_list.rolling_list
-sh2_SensorValue_t value;
-if (sh2_decodeSensorEvent(&value, event) == SH2_OK) {
-if (value.sensorId == SH2_ROTATION_VECTOR) {
-if (l[sh2_vector_list.cursor] >= SH_2_VECOTR_LIST_ROW_MAX || !sh2_vector_list.data_ready) {
-local_cursor = 0;
-}
-else {
-local_cursor++;
-}
-l[local_cursor][0] = value.un.rotationVector.real;
-l[local_cursor][1] = value.un.rotationVector.i;
-l[local_cursor][2] = value.un.rotationVector.j;
-l[local_cursor][3] = value.un.rotationVector.k;
-sh2_vector_list.cursor = local_cursor;
-if(sh2_vector_list.data_ready == false)
-{
-sh2_vector_list.data_ready = true;
-}
-}
-} else {
-printf("wrong event?\n");
-}
-#undef l
+    uint16_t local_cursor = sh2_vector_list.cursor;
+    #define l sh2_vector_list.rolling_list
+    sh2_SensorValue_t value;
+    if (sh2_decodeSensorEvent(&value, event) == SH2_OK) {
+        if (value.sensorId == SH2_ROTATION_VECTOR) {
+            if (l[sh2_vector_list.cursor] >= SH_2_VECOTR_LIST_ROW_MAX || !sh2_vector_list.data_ready) {
+                local_cursor = 0;
+            }
+            else {
+                 local_cursor++;
+            }
+                l[local_cursor][0] = value.un.rotationVector.real;
+                l[local_cursor][1] = value.un.rotationVector.i;
+                l[local_cursor][2] = value.un.rotationVector.j;
+                l[local_cursor][3] = value.un.rotationVector.k;
+                sh2_vector_list.cursor = local_cursor;
+                if(sh2_vector_list.data_ready == false)
+            {
+                sh2_vector_list.data_ready = true;
+            }
+        }
+    } else {
+         printf("wrong event?\n");
+    }
+    #undef l
 }
 // Async event callback
 static void async_handler(void *cookie, sh2_AsyncEvent_t *event) {
-if (event->eventId == SH2_RESET) {
-printf("BNO08x reset\n");
-reset_received = true;
+    if (event->eventId == SH2_RESET) {
+    printf("BNO08x reset\n");
+    reset_received = true;
 }
 }
 static void sh2_open_or_halt() {
-// Open SH-2 interface
-rc = sh2_open(&hal, async_handler, NULL);
-if (rc != SH2_OK) {
-printf("SH-2 open failed: %d\n", rc);
-while (1);
+    // Open SH-2 interface
+    rc = sh2_open(&hal, async_handler, NULL);
+    if (rc != SH2_OK) {
+    printf("SH-2 open failed: %d\n", rc);
+    while (1);
 }
 }
+<<<<<<< HEAD
 
 void printEventWrapper(void * cookie, sh2_SensorEvent_t* event) {
     printEvent(event);
@@ -111,17 +113,25 @@ static void sh2_setSensorCallback_or_halt() {
         printf("Callback setup failed: %d\n", rc);
         sh2_close();
         while (1);
+=======
+static void sh2_setSensorCallback_or_halt() {
+    rc = sh2_setSensorCallback(sensor_handler, NULL);
+    if (rc != SH2_OK) {
+    printf("Callback setup failed: %d\n", rc);
+    sh2_close();
+    while (1);
+>>>>>>> fe6542b (SPI version added)
     }
 }
 static void sh2_devReset_or_halt() {
-rc = sh2_devReset();
-if (rc != SH2_OK) {
-printf("Reset failed: %d\n", rc);
-sh2_close();
-while (1);
-}
-reset_received = false;
-sleep_ms(300);// Wait for stabilization
+    rc = sh2_devReset();
+    if (rc != SH2_OK) {
+    printf("Reset failed: %d\n", rc);
+    sh2_close();
+    while (1);
+    }
+    reset_received = false;
+    sleep_ms(300);// Wait for stabilization
 }
 // Print a sensor event to the console
 void printEvent(const sh2_SensorEvent_t * event)
@@ -258,38 +268,38 @@ void printEvent(const sh2_SensorEvent_t * event)
             break;
     }
 }
+
 static void sh2_setSensorConfig_or_halt() {
-// Enable rotation vector (100 Hz)
-sh2_SensorConfig_t config;
-memset(&config, 0, sizeof(config));
-float test = (1.0f/(float)SAMPLE_RATE) * 1000000.0f;
-config.reportInterval_us = test; // 10 ms = 100 Hz
-// TODO - add a global array rolling array and only take the latest value
-rc = sh2_setSensorConfig(SH2_RAW_GYROSCOPE, &config);
-if (rc != SH2_OK) {
-printf("Config failed: %d\n", rc);
-sh2_close();
-while (1);
+    // Enable rotation vector (100 Hz)
+    sh2_SensorConfig_t config;
+    memset(&config, 0, sizeof(config));
+    float test = (1.0f/(float)SAMPLE_RATE) * 1000000.0f;
+    config.reportInterval_us = test; // 10 ms = 100 Hz
+    rc = sh2_setSensorConfig(SH2_ROTATION_VECTOR, &config);
+    if (rc != SH2_OK) {
+    printf("Config failed: %d\n", rc);
+    sh2_close();
+    while (1);
 }
 }
 static void initialize_HALL() {
-hal.open = spi_open;
-hal.close = spi_close;
-hal.read = spi_read;
-hal.write = spi_write;
-hal.getTimeUs = get_time_us;
+    hal.open = spi_open;
+    hal.close = spi_close;
+    hal.read = spi_read;
+    hal.write = spi_write;
+    hal.getTimeUs = get_time_us;
 }
 static void wait_for_reset_or_halt() {
-absolute_time_t timeout = make_timeout_time_ms(2000);
-while (!reset_received) {
-sh2_service();
-if (time_reached(timeout)) {
-printf("Timeout waiting for reset event!\n");
-sh2_close();
-while(1);
-}
-sleep_ms(10);
-}
+    absolute_time_t timeout = make_timeout_time_ms(2000);
+    while (!reset_received) {
+    sh2_service();
+    if (time_reached(timeout)) {
+        printf("Timeout waiting for reset event!\n");
+        sh2_close();
+        while(1);
+    }
+    sleep_ms(10);
+    }
 }
 void setup_sh2_service() {
 initialize_HALL();

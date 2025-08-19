@@ -10,3 +10,6 @@ WHOLE LOOP SPEED (no sleep)
 
 8.333ms (loop duration for 120hz)
 6.255ms (whole loop without any sleep)
+
+----- BNO08x ----------
+READ -- 98771 (RIP)

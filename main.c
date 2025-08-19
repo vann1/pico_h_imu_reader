@@ -36,6 +36,7 @@ int main() {
     }
 
 	initialize_sensors();
+    setup_sh2_service();
 
     Sensor sensors[SENSOR_COUNT];
     initialize_calibrations(sensors); 
@@ -69,10 +70,10 @@ int main() {
         // uint64_t end = time_us_64();
         // printf("FUSION AHRS UPDATE ------ %llu\n", end-start);
         // uint64_t start = time_us_64();
-        print_output_data();
+        // print_output_data();
         // uint64_t end = time_us_64();
         // printf("WHOLE THINGY ------ %llu\n", end-start);
-        
+        read_super_sensor();
         counter++;
         elapsed_time = (clock() - start_time) / (float)CLOCKS_PER_SEC;
         if (elapsed_time >= 1) {

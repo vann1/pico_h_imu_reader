@@ -35,7 +35,7 @@ static void clear_i2c_flags() {
 
 // HAL: Initialize I2C0
 static int i2c_open(sh2_Hal_t* pInstance) {
-    i2c_init(I2C_PORT, I2C_BAUD);
+    i2c_init(I2C_PORT, 100*1000);
     gpio_set_function(I2C_SDA, GPIO_FUNC_I2C);
     gpio_set_function(I2C_SCL, GPIO_FUNC_I2C);
     gpio_pull_up(I2C_SDA);
@@ -50,18 +50,15 @@ static void i2c_close(sh2_Hal_t* pInstance) {
 
 // HAL: Read I2C data
 static int i2c_read(sh2_Hal_t* pInstance, uint8_t *pData, unsigned len, uint32_t *pTimestamp_us) {
-    clock_t start_time = clock();
+    uint64_t start = time_us_64();
+    printf("SH2 READ LEN %d\n", len);
 
-    // Wait for bus to be completely idle
-    // while (i2c_get_hw(I2C_PORT)->status & I2C_IC_STATUS_ACTIVITY_BITS) {
-    //     tight_loop_contents();
-    // }
-
-    clear_i2c_flags();
+    // clear_i2c_flags();
 
     int rc = i2c_read_blocking(I2C_PORT, BNO08X_ADDR, pData, len, false);
-    float elapsed_time = clock() - start_time;
-    printf("Lukemisen aika: %.2f", elapsed_time);
+    uint64_t end = time_us_64();
+    printf("SH2_PAKETTI i2c read time ------ %llu\n", end-start);
+    // printf("Lukemisen aika: %.2f", elapsed_time);
     if (rc != len) return SH2_ERR;
     *pTimestamp_us = to_us_since_boot(get_absolute_time());
     return rc;
@@ -302,6 +299,7 @@ static void sh2_setSensorConfig_or_halt() {
     config.reportInterval_us = test; // 10 ms = 100 Hz
     // TODO - add a global array rolling array and only take the latest value
 
+    // rc = sh2_setSensorConfig(SH2_ROTATION_VECTOR, &config);
     rc = sh2_setSensorConfig(SH2_RAW_GYROSCOPE, &config);
     if (rc != SH2_OK) {
         printf("Config failed: %d\n", rc);
@@ -336,8 +334,8 @@ void setup_sh2_service() {
     sh2_open_or_halt();
     sh2_setSensorCallback_or_halt();
     // most likely unneeded because sh2 open already does software reset
-    sh2_devReset_or_halt(); 
-    wait_for_reset_or_halt();
+    // sh2_devReset_or_halt(); 
+    // wait_for_reset_or_halt();
     sh2_setSensorConfig_or_halt();
 }
 

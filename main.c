@@ -11,11 +11,11 @@ extern sh2_vector_list_t sh2_vector_list;
 
 #define SLEEP_DURATION(hz) (float)(1.0f/hz * 1000.0f)
 
-float sensors_data[SENSOR_COUNT+1][4];
+float sensors_data[SENSOR_COUNT][4];
 
 
 void print_output_data (void) {
-    for (int i = 0; i < SENSOR_COUNT+1; i++) {
+    for (int i = 0; i < SENSOR_COUNT; i++) {
         printf("w%d: %.2f, x%d: %.2f, y%d: %.2f, z%d: %.2f | ",i, sensors_data[i][0],i, sensors_data[i][1],i, sensors_data[i][2],i, sensors_data[i][3] );
     }
     printf("\n");
@@ -27,7 +27,7 @@ int main() {
     while (!tud_cdc_connected()) {
         sleep_ms(100);
     }
-    setup_sh2_service();
+    // setup_sh2_service();
     int result = setup_I2C_pins();
 
     if (result != 1) {
@@ -36,6 +36,7 @@ int main() {
     }
 
 	initialize_sensors();
+    setup_sh2_service();
 
     Sensor sensors[SENSOR_COUNT];
     initialize_calibrations(sensors); 
@@ -43,14 +44,19 @@ int main() {
     
     int counter = 0;
     clock_t start_time = clock();
-
+    clock_t elapsed_time = start_time;
     while (true) {
+        // uint64_t start = time_us_64();
         read_all_sensors(sensors);
+            // uint64_t end = time_us_64();
+        // printf("READ ALL SENSORS ------ %llu\n", end-start);
+        
+        // uint64_t start = time_us_64();
         for (int i=0; i<SENSOR_COUNT;i++) {
             sensors[i].gyroscope = FusionCalibrationInertial(sensors[i].gyroscope, sensors[i].calibration.gyroscopeMisalignment, sensors[i].calibration.gyroscopeSensitivity, sensors[i].calibration.gyroscopeOffset);
             sensors[i].accelerometer = FusionCalibrationInertial(sensors[i].accelerometer, sensors[i].calibration.accelerometerMisalignment, sensors[i].calibration.accelerometerSensitivity, sensors[i].calibration.accelerometerOffset);
             sensors[i].gyroscope = FusionOffsetUpdate(&sensors[i].offset, sensors[i].gyroscope);
-
+            
             const float deltaTime = (float) (sensors[i].timestamp - sensors[i].previousTimestamp) / (float) CLOCKS_PER_SEC;
             sensors[i].previousTimestamp = sensors[i].timestamp;
 
@@ -61,30 +67,23 @@ int main() {
             sensors_data[i][2] = quat.element.y;
             sensors_data[i][3] = quat.element.z;           
         }
+        // uint64_t end = time_us_64();
+        // printf("FUSION AHRS UPDATE ------ %llu\n", end-start);
+        // uint64_t start = time_us_64();
+        // print_output_data();
+        // uint64_t end = time_us_64();
+        // printf("WHOLE THINGY ------ %llu\n", end-start);
         read_super_sensor();
-        if (sh2_vector_list.data_ready == false) {
-            sleep_ms(1000);
-            printf("pitäisi tulostua kerran.");
-            sh2_vector_list.data_ready == true;
-        } 
-        else {
-            sensors_data[SENSOR_COUNT][0] = sh2_vector_list.rolling_list[sh2_vector_list.cursor][0];
-            sensors_data[SENSOR_COUNT][1] = sh2_vector_list.rolling_list[sh2_vector_list.cursor][1];
-            sensors_data[SENSOR_COUNT][2] = sh2_vector_list.rolling_list[sh2_vector_list.cursor][2];
-            sensors_data[SENSOR_COUNT][3] =sh2_vector_list.rolling_list[sh2_vector_list.cursor][3];
-            print_output_data();
-            printf("---\n");
-        }   
-        float elapsed_time = (clock() - start_time)/ (float) CLOCKS_PER_SEC;
         counter++;
-
+        elapsed_time = (clock() - start_time) / (float)CLOCKS_PER_SEC;
         if (elapsed_time >= 1) {
-            printf("main.c counter: %d\n", counter);
-            counter = 0;
+            printf("\n\n\nCounter ------------- %d \n\n\n", counter);
             start_time = clock();
+            counter = 0;
         }
-        sleep_ms(SLEEP_DURATION((float)SAMPLE_RATE));
 
+        // sleep_ms(SLEEP_DURATION((float)SAMPLE_RATE));
+        sleep_ms(2.1); // Hardcoded sleep to achieve 120 hz sample rate for this setup
     }
     return 0;
 }

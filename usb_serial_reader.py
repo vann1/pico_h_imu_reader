@@ -36,7 +36,7 @@ def receive_pico_data():
                     elapsed_time = time.time() - start_time
                     counter += 1
                     if elapsed_time >=1:
-                        print(f"{counter}")
+                        print(f"USB SERIAL COUNTER: PYTHON PÄÄSSÄ: {counter}")
                         counter = 0
                         start_time = time.time()
                     print(f"{line}")

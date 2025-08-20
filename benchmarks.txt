@@ -1,0 +1,15 @@
+time in microseconds
+READ_ALL_SENsORS - 5435
+FUSION_AHRS_UPdATE (whole loop) - 275
+PRINT_OUTPUT_DATA 520
+WHOLE_THINGY - 6255
+
+------------------------------------------
+WHOLE LOOP SPEED (no sleep)
+160 times - 16ms per loop
+
+8.333ms (loop duration for 120hz)
+6.255ms (whole loop without any sleep)
+
+----- BNO08x ----------
+READ -- 98771 (RIP)

@@ -16,7 +16,7 @@ float sensors_data[SENSOR_COUNT][4];
 
 void print_output_data (void) {
     for (int i = 0; i < SENSOR_COUNT; i++) {
-        printf("w%d: %.2f, x%d: %.2f, y%d: %.2f, z%d: %.2f | ",i, sensors_data[i][0],i, sensors_data[i][1],i, sensors_data[i][2],i, sensors_data[i][3] );
+        printf("w%d: %.4f, x%d: %.4f, y%d: %.4f, z%d: %.4f | ",i, sensors_data[i][0],i, sensors_data[i][1],i, sensors_data[i][2],i, sensors_data[i][3] );
     }
     printf("\n");
 }

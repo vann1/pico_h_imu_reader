@@ -11,10 +11,12 @@
 #define SPI_SCK 10  // GPIO10 (SCK)
 #define SPI_CS 9  // GPIO9 (CS)
 #define SPI_BAUD 3000000 // 3 MHz
-#define SPI_RESET 13 //GPIO12 (RST)
+#define SPI_RESET 13 //GPIO13 (RST)
 static void bno_int_handler(uint gpio, uint32_t events);
 // TODO - täytä oikeialla
 #define BNO_INT 12
+#define BNO_P0 14  // GPIO14 (BNO_P0)
+
 
 
 sh2_vector_list_t sh2_vector_list = {
@@ -29,23 +31,25 @@ static int rc;
 
 // HAL: Initialize SPI
 static int spi_open(sh2_Hal_t* pInstance) {
+    gpio_set_dir(BNO_P0, GPIO_OUT);
+    gpio_put(BNO_P0, 1); 
+
     spi_init(SPI_INST, SPI_BAUD);
     gpio_set_function(SPI_MISO, GPIO_FUNC_SPI);
     gpio_set_function(SPI_MOSI, GPIO_FUNC_SPI);
     gpio_set_function(SPI_SCK, GPIO_FUNC_SPI);
-    gpio_set_function(SPI_RESET, GPIO_FUNC_SPI);
 
     gpio_init(BNO_INT);
     gpio_set_dir(BNO_INT, GPIO_IN);
     gpio_pull_up(BNO_INT);
-    gpio_set_irq_enabled_with_callback(BNO_INT, GPIO_IRQ_EDGE_FALL, true, &bno_int_handler);
+    gpio_set_irq_enabled_with_callback(BNO_INT, GPIO_IRQ_EDGE_FALL, true, &bno_int_handler);    
 
     gpio_set_dir(SPI_RESET, GPIO_OUT);
 
     // reseting the sensor
-    gpio_put(SPI_CS, 0);
+    gpio_put(SPI_RESET, 0);
     sleep_ms(1);
-    gpio_put(SPI_CS, 1);
+    gpio_put(SPI_RESET, 1);
 
     gpio_init(SPI_CS);
     gpio_set_dir(SPI_CS, GPIO_OUT);
@@ -57,6 +61,7 @@ static int spi_open(sh2_Hal_t* pInstance) {
 
 static void bno_int_handler(uint gpio, uint32_t events) {
     if (gpio == BNO_INT) {
+        gpio_put(BNO_P0, 1); 
         bno_ready = true;
     }
 }
@@ -83,8 +88,13 @@ static int spi_read(sh2_Hal_t* pInstance, uint8_t *pData, unsigned len, uint32_t
 
 // HAL: Write SPI data
 static int spi_write(sh2_Hal_t pInstance, uint8_t pData, unsigned len) {
+        if(!bno_ready) {
+            gpio_put(BNO_P0, 0); 
+            return 0;
+        }
         printf("mhm2\n");
         gpio_put(SPI_CS, 0);
+        
         int result = spi_write_blocking(SPI_INST, pData, len);
         gpio_put(SPI_CS, 1);
         bno_ready = false;
@@ -125,16 +135,16 @@ static void sensor_handler(void *cookie, sh2_SensorEvent_t *event) {
 // Async event callback
 static void async_handler(void *cookie, sh2_AsyncEvent_t *event) {
     if (event->eventId == SH2_RESET) {
-    printf("BNO08x reset\n");
-    reset_received = true;
+        printf("BNO08x reset\n");
+        reset_received = true;
 }
 }
 static void sh2_open_or_halt() {
     // Open SH-2 interface
     rc = sh2_open(&hal, async_handler, NULL);
     if (rc != SH2_OK) {
-    printf("SH-2 open failed: %d\n", rc);
-    while (1);
+        printf("SH-2 open failed: %d\n", rc);
+        while (1);
 }
 }
 
@@ -303,7 +313,6 @@ static void sh2_setSensorConfig_or_halt() {
     float test = (1.0f/(float)SAMPLE_RATE) * 1000000.0f;
     config.reportInterval_us = test; // 10 ms = 100 Hz
     printf("Setsensorfocnfg\n");
-
     rc = sh2_setSensorConfig(SH2_ROTATION_VECTOR, &config);
     printf("Rc: %d\n", rc);
     if (rc != SH2_OK) {

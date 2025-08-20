@@ -6,11 +6,13 @@
 
 // SPI configuration
 #define SPI_INST spi1
-#define SPI_MISO 8 // GPIO0 (RX)
-#define SPI_MOSI 11 // GPIO3 (TX)
-#define SPI_SCK 10  // GPIO2 (SCK)
-#define SPI_CS 9  // GPIO1 (CS)
+#define SPI_MISO 8 // GPIO8 (RX)
+#define SPI_MOSI 11 // GPIO11 (TX)
+#define SPI_SCK 10  // GPIO10 (SCK)
+#define SPI_CS 9  // GPIO9 (CS)
 #define SPI_BAUD 3000000 // 3 MHz
+#define SPI_RESET 13 //GPIO12 (RST)
+static void bno_int_handler(uint gpio, uint32_t events);
 // TODO - täytä oikeialla
 #define BNO_INT 12
 
@@ -31,11 +33,19 @@ static int spi_open(sh2_Hal_t* pInstance) {
     gpio_set_function(SPI_MISO, GPIO_FUNC_SPI);
     gpio_set_function(SPI_MOSI, GPIO_FUNC_SPI);
     gpio_set_function(SPI_SCK, GPIO_FUNC_SPI);
+    gpio_set_function(SPI_RESET, GPIO_FUNC_SPI);
 
     gpio_init(BNO_INT);
     gpio_set_dir(BNO_INT, GPIO_IN);
     gpio_pull_up(BNO_INT);
     gpio_set_irq_enabled_with_callback(BNO_INT, GPIO_IRQ_EDGE_FALL, true, &bno_int_handler);
+
+    gpio_set_dir(SPI_RESET, GPIO_OUT);
+
+    // reseting the sensor
+    gpio_put(SPI_CS, 0);
+    sleep_ms(1);
+    gpio_put(SPI_CS, 1);
 
     gpio_init(SPI_CS);
     gpio_set_dir(SPI_CS, GPIO_OUT);
@@ -60,6 +70,7 @@ static int spi_read(sh2_Hal_t* pInstance, uint8_t *pData, unsigned len, uint32_t
     if (!bno_ready) {
         return 0;
     } else {
+        printf("mhm\n");
         gpio_put(SPI_CS, 0);
         int rc = spi_read_blocking(SPI_INST, 0xFF, pData, len);
         gpio_put(SPI_CS, 1);
@@ -72,13 +83,15 @@ static int spi_read(sh2_Hal_t* pInstance, uint8_t *pData, unsigned len, uint32_t
 
 // HAL: Write SPI data
 static int spi_write(sh2_Hal_t pInstance, uint8_t pData, unsigned len) {
-    gpio_put(SPI_CS, 0);
-    int result = spi_write_blocking(SPI_INST, pData, len);
-    gpio_put(SPI_CS, 1);
-    return (result == len) ? result : SH2_ERR;
+        printf("mhm2\n");
+        gpio_put(SPI_CS, 0);
+        int result = spi_write_blocking(SPI_INST, pData, len);
+        gpio_put(SPI_CS, 1);
+        bno_ready = false;
+        return (result == len) ? result : SH2_ERR;
 }
 // HAL: Get microsecond timestamp
-static uint32_t get_time_us(sh2_Hal_t pInstance) {
+static uint32_t _get_time_us(sh2_Hal_t pInstance) {
     return to_us_since_boot(get_absolute_time());
 }
 // Sensor event callback
@@ -289,11 +302,14 @@ static void sh2_setSensorConfig_or_halt() {
     memset(&config, 0, sizeof(config));
     float test = (1.0f/(float)SAMPLE_RATE) * 1000000.0f;
     config.reportInterval_us = test; // 10 ms = 100 Hz
+    printf("Setsensorfocnfg\n");
+
     rc = sh2_setSensorConfig(SH2_ROTATION_VECTOR, &config);
+    printf("Rc: %d\n", rc);
     if (rc != SH2_OK) {
-    printf("Config failed: %d\n", rc);
-    sh2_close();
-    while (1);
+        printf("Config failed: %d\n", rc);
+        sh2_close();
+        while (1);
 }
 }
 static void initialize_HALL() {
@@ -301,7 +317,7 @@ static void initialize_HALL() {
     hal.close = spi_close;
     hal.read = spi_read;
     hal.write = spi_write;
-    hal.getTimeUs = get_time_us;
+    hal.getTimeUs = _get_time_us;
 }
 static void wait_for_reset_or_halt() {
     absolute_time_t timeout = make_timeout_time_ms(2000);
@@ -316,14 +332,27 @@ static void wait_for_reset_or_halt() {
     }
 }
 void setup_sh2_service() {
+    printf("pääskö tänne \n");
+
     initialize_HALL();
+    printf("pääskö tänne 1\n");
+
     sh2_open_or_halt();
+    printf("pääskö tänne 2\n");
+
     sh2_setSensorCallback_or_halt();
-    // most likely unneeded because sh2 open already does software reset
-    sh2_devReset_or_halt();
-    wait_for_reset_or_halt();
+    printf("pääskö tänne 3\n");
+ 
+    // // most likely unneeded because sh2 open already does software reset
+    // sh2_devReset_or_halt();
+    // printf("pääskö tänne 4\n");
+
+    // wait_for_reset_or_halt();
+    // printf("pääskö tänne 5\n");
+
     sh2_setSensorConfig_or_halt();
+    printf("pääskö tänne \n");
 }
 void read_super_sensor() {
-sh2_service();
+    sh2_service();
 }

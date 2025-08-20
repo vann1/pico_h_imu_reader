@@ -11,6 +11,9 @@
 #define SPI_SCK 2  // GPIO2 (SCK)
 #define SPI_CS 1   // GPIO1 (CS)
 #define SPI_BAUD 3000000 // 3 MHz
+// TODO - täytä oikeialla
+#define BNO_INT 10
+
 
 sh2_vector_list_t sh2_vector_list = {
     .cursor = 0,
@@ -19,6 +22,7 @@ sh2_vector_list_t sh2_vector_list = {
 
 static sh2_Hal_t hal;
 static bool reset_received = false;
+static bno_ready = false;
 static int rc;
 
 // HAL: Initialize SPI
@@ -27,24 +31,43 @@ static int spi_open(sh2_Hal_t* pInstance) {
     gpio_set_function(SPI_MISO, GPIO_FUNC_SPI);
     gpio_set_function(SPI_MOSI, GPIO_FUNC_SPI);
     gpio_set_function(SPI_SCK, GPIO_FUNC_SPI);
+
+    gpio_init(BNO_INT);
+    gpio_set_dir(BNO_INT, GPIO_IN);
+    gpio_pull_up(BNO_INT);
+    gpio_set_irq_enabled_with_callback(BNO_INT, GPIO_IRQ_EDGE_FALL, true, &bno_int_handler);
+
     gpio_init(SPI_CS);
     gpio_set_dir(SPI_CS, GPIO_OUT);
     gpio_put(SPI_CS, 1);
+
     spi_set_format(SPI_INST, 8, SPI_CPOL_1, SPI_CPHA_1, SPI_MSB_FIRST);
     return SH2_OK;
 }
+
+static void bno_int_handler(uint gpio, uint32_t events) {
+    if (gpio == BNO_INT) {
+        bno_ready = true;
+    }
+}
+
 // HAL: Close SPI
 static void spi_close(sh2_Hal_t* pInstance) {
     spi_deinit(SPI_INST);
 }
 // HAL: Read SPI data
 static int spi_read(sh2_Hal_t* pInstance, uint8_t *pData, unsigned len, uint32_t *pTimestamp_us) {
-    gpio_put(SPI_CS, 0);
-    int rc = spi_read_blocking(SPI_INST, 0xFF, pData, len);
-    gpio_put(SPI_CS, 1);
-    if (rc != len) return SH2_ERR;
-    pTimestamp_us = to_us_since_boot(get_absolute_time());
-    return rc;
+    if (!bno_ready) {
+        return 0;
+    } else {
+        gpio_put(SPI_CS, 0);
+        int rc = spi_read_blocking(SPI_INST, 0xFF, pData, len);
+        gpio_put(SPI_CS, 1);
+        bno_ready = 0;
+        if (rc != len) return SH2_ERR;
+        pTimestamp_us = to_us_since_boot(get_absolute_time());
+        return rc;
+    }
 }
 
 // HAL: Write SPI data

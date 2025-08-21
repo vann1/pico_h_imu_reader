@@ -31,10 +31,12 @@ static int rc;
 
 // HAL: Initialize SPI
 static int spi_open(sh2_Hal_t* pInstance) {
+    gpio_init(BNO_P0);
     gpio_set_dir(BNO_P0, GPIO_OUT);
     gpio_put(BNO_P0, 1); 
 
     spi_init(SPI_INST, SPI_BAUD);
+
     gpio_set_function(SPI_MISO, GPIO_FUNC_SPI);
     gpio_set_function(SPI_MOSI, GPIO_FUNC_SPI);
     gpio_set_function(SPI_SCK, GPIO_FUNC_SPI);
@@ -44,6 +46,7 @@ static int spi_open(sh2_Hal_t* pInstance) {
     gpio_pull_up(BNO_INT);
     gpio_set_irq_enabled_with_callback(BNO_INT, GPIO_IRQ_EDGE_FALL, true, &bno_int_handler);    
 
+    gpio_init(SPI_RESET);
     gpio_set_dir(SPI_RESET, GPIO_OUT);
 
     // reseting the sensor
@@ -61,7 +64,7 @@ static int spi_open(sh2_Hal_t* pInstance) {
 
 static void bno_int_handler(uint gpio, uint32_t events) {
     if (gpio == BNO_INT) {
-        gpio_put(BNO_P0, 1); 
+        // printf("bno_int_handler\n");
         bno_ready = true;
     }
 }
@@ -75,7 +78,7 @@ static int spi_read(sh2_Hal_t* pInstance, uint8_t *pData, unsigned len, uint32_t
     if (!bno_ready) {
         return 0;
     } else {
-        printf("mhm\n");
+        // printf("mhm\n");
         gpio_put(SPI_CS, 0);
         int rc = spi_read_blocking(SPI_INST, 0xFF, pData, len);
         gpio_put(SPI_CS, 1);
@@ -92,10 +95,14 @@ static int spi_write(sh2_Hal_t pInstance, uint8_t pData, unsigned len) {
             gpio_put(BNO_P0, 0); 
             return 0;
         }
-        printf("mhm2\n");
+        // printf("mhm2\n");
         gpio_put(SPI_CS, 0);
-        
+        gpio_put(BNO_P0, 1); 
+        printf("len: %d\n", len);
+
         int result = spi_write_blocking(SPI_INST, pData, len);
+        printf("result: %d\n", result);
+        
         gpio_put(SPI_CS, 1);
         bno_ready = false;
         return (result == len) ? result : SH2_ERR;
@@ -360,7 +367,7 @@ void setup_sh2_service() {
     // printf("pääskö tänne 5\n");
 
     sh2_setSensorConfig_or_halt();
-    printf("pääskö tänne \n");
+    printf("pääskö tänne 4\n");
 }
 void read_super_sensor() {
     sh2_service();

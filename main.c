@@ -73,14 +73,14 @@ int main() {
         // uint64_t end = time_us_64();
         // printf("WHOLE THINGY ------ %llu\n", end-start);
         read_super_sensor();
-        print_output_data();
-        counter++;
-        elapsed_time = (clock() - start_time) / (float)CLOCKS_PER_SEC;
-        if (elapsed_time >= 1) {
-            printf("\n\n\nCounter ------------- %d \n\n\n", counter);
-            start_time = clock();
-            counter = 0;
-        }
+        // print_output_data();
+        // counter++;
+        // elapsed_time = (clock() - start_time) / (float)CLOCKS_PER_SEC;
+        // if (elapsed_time >= 1) {
+        //     printf("\n\n\nCounter ------------- %d \n\n\n", counter);
+        //     start_time = clock();
+        //     counter = 0;
+        // }
 
         // sleep_ms(SLEEP_DURATION((float)SAMPLE_RATE));
         sleep_ms(2.1); // Hardcoded sleep to achieve 120 hz sample rate for this setup

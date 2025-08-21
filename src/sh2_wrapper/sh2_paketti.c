@@ -26,7 +26,7 @@ sh2_vector_list_t sh2_vector_list = {
 
 static sh2_Hal_t hal;
 static bool reset_received = false;
-static bno_ready = false;
+static bool bno_ready = false;
 static int rc;
 
 // HAL: Initialize SPI
@@ -82,19 +82,22 @@ static int spi_read(sh2_Hal_t* pInstance, uint8_t *pData, unsigned len, uint32_t
         gpio_put(SPI_CS, 0);
         int rc = spi_read_blocking(SPI_INST, 0xFF, pData, len);
         gpio_put(SPI_CS, 1);
-        bno_ready = 0;
+        bno_ready = false;
+
         if (rc != len) return SH2_ERR;
-        pTimestamp_us = to_us_since_boot(get_absolute_time());
+        *pTimestamp_us = to_us_since_boot(get_absolute_time());
         return rc;
     }
 }
 
 // HAL: Write SPI data
-static int spi_write(sh2_Hal_t pInstance, uint8_t pData, unsigned len) {
+static int spi_write(sh2_Hal_t* pInstance, uint8_t* pData, unsigned len) {
         if(!bno_ready) {
             gpio_put(BNO_P0, 0); 
             return 0;
         }
+
+        
         // printf("mhm2\n");
         gpio_put(SPI_CS, 0);
         gpio_put(BNO_P0, 1); 
@@ -108,11 +111,12 @@ static int spi_write(sh2_Hal_t pInstance, uint8_t pData, unsigned len) {
         return (result == len) ? result : SH2_ERR;
 }
 // HAL: Get microsecond timestamp
-static uint32_t _get_time_us(sh2_Hal_t pInstance) {
+static uint32_t _get_time_us(sh2_Hal_t* pInstance) {
     return to_us_since_boot(get_absolute_time());
 }
 // Sensor event callback
 static void sensor_handler(void *cookie, sh2_SensorEvent_t *event) {
+    printf("#####################################################################################################################\n");
     uint16_t local_cursor = sh2_vector_list.cursor;
     #define l sh2_vector_list.rolling_list
     sh2_SensorValue_t value;
@@ -124,11 +128,12 @@ static void sensor_handler(void *cookie, sh2_SensorEvent_t *event) {
             else {
                  local_cursor++;
             }
-                l[local_cursor][0] = value.un.rotationVector.real;
-                l[local_cursor][1] = value.un.rotationVector.i;
-                l[local_cursor][2] = value.un.rotationVector.j;
-                l[local_cursor][3] = value.un.rotationVector.k;
-                sh2_vector_list.cursor = local_cursor;
+            l[local_cursor][0] = value.un.rotationVector.real;
+            l[local_cursor][1] = value.un.rotationVector.i;
+            l[local_cursor][2] = value.un.rotationVector.j;
+            l[local_cursor][3] = value.un.rotationVector.k;
+            sh2_vector_list.cursor = local_cursor;
+            printf("w: %.2f, x: %.2f, y: %.2f, z: %.2f | \n", value.un.rotationVector.real, value.un.rotationVector.i , value.un.rotationVector.j, value.un.rotationVector.k);
                 if(sh2_vector_list.data_ready == false)
             {
                 sh2_vector_list.data_ready = true;
@@ -141,10 +146,15 @@ static void sensor_handler(void *cookie, sh2_SensorEvent_t *event) {
 }
 // Async event callback
 static void async_handler(void *cookie, sh2_AsyncEvent_t *event) {
+if (event->eventId == SH2_SHTP_EVENT) {
+
+        printf("Async Hanlder; eventId: %d; SHTP EVENT: %d\n", event->eventId, event->shtpEvent);
+    }
+
     if (event->eventId == SH2_RESET) {
         printf("BNO08x reset\n");
         reset_received = true;
-}
+    }
 }
 static void sh2_open_or_halt() {
     // Open SH-2 interface
@@ -317,9 +327,9 @@ static void sh2_setSensorConfig_or_halt() {
     // Enable rotation vector (100 Hz)
     sh2_SensorConfig_t config;
     memset(&config, 0, sizeof(config));
-    float test = (1.0f/(float)SAMPLE_RATE) * 1000000.0f;
+    int test = 10000;
     config.reportInterval_us = test; // 10 ms = 100 Hz
-    printf("Setsensorfocnfg\n");
+    printf("Setsensorfocnfg: %d\n", test);
     rc = sh2_setSensorConfig(SH2_ROTATION_VECTOR, &config);
     printf("Rc: %d\n", rc);
     if (rc != SH2_OK) {

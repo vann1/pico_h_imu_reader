@@ -6,6 +6,7 @@ target_include_directories(sh2_wrapper INTERFACE .)
 target_link_libraries(sh2_wrapper
 PRIVATE
 pico_stdlib
+hardware_spi
 hardware_i2c
 i2c_helpers
 PUBLIC

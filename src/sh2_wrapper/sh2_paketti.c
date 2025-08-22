@@ -51,14 +51,16 @@ static int spi_open(sh2_Hal_t* pInstance) {
 
     // reseting the sensor
     gpio_put(SPI_RESET, 0);
-    sleep_ms(1);
-    gpio_put(SPI_RESET, 1);
 
     gpio_init(SPI_CS);
     gpio_set_dir(SPI_CS, GPIO_OUT);
     gpio_put(SPI_CS, 1);
 
+    sleep_ms(10);
+    gpio_put(SPI_RESET, 1);
+
     spi_set_format(SPI_INST, 8, SPI_CPOL_1, SPI_CPHA_1, SPI_MSB_FIRST);
+    sleep_ms(2000);
     return SH2_OK;
 }
 
@@ -78,38 +80,43 @@ static int spi_read(sh2_Hal_t* pInstance, uint8_t *pData, unsigned len, uint32_t
     if (!bno_ready) {
         return 0;
     } else {
-        // printf("mhm\n");
+        bno_ready = false;
         gpio_put(SPI_CS, 0);
         int rc = spi_read_blocking(SPI_INST, 0xFF, pData, len);
         gpio_put(SPI_CS, 1);
-        bno_ready = false;
 
         if (rc != len) return SH2_ERR;
         *pTimestamp_us = to_us_since_boot(get_absolute_time());
+        gpio_put(BNO_P0, 1);
         return rc;
     }
 }
 
-// HAL: Write SPI data
+// HAL: Write SPI data (with wake handling)
 static int spi_write(sh2_Hal_t* pInstance, uint8_t* pData, unsigned len) {
-        if(!bno_ready) {
-            gpio_put(BNO_P0, 0); 
-            return 0;
+    absolute_time_t timeout = make_timeout_time_ms(100);  // Timeout for wake
+
+    if (!bno_ready) {
+        gpio_put(BNO_P0, 0);  // Assert WAKE low to wake sensor
+        while (!bno_ready) {
+            if (time_reached(timeout)) {
+                gpio_put(BNO_P0, 1);  // Clean up
+                return SH2_ERR;
+            }
+            sleep_us(10);
         }
+    }
 
-        
-        // printf("mhm2\n");
-        gpio_put(SPI_CS, 0);
-        gpio_put(BNO_P0, 1); 
-        printf("len: %d\n", len);
+    gpio_put(BNO_P0, 1);  // Deassert WAKE high
+    gpio_put(SPI_CS, 0);
 
-        int result = spi_write_blocking(SPI_INST, pData, len);
-        printf("result: %d\n", result);
-        
-        gpio_put(SPI_CS, 1);
-        bno_ready = false;
-        return (result == len) ? result : SH2_ERR;
+    int result = spi_write_blocking(SPI_INST, pData, len);
+
+    gpio_put(SPI_CS, 1);
+    bno_ready = false;  // Reset ready flag after transaction
+    return (result == len) ? result : SH2_ERR;
 }
+
 // HAL: Get microsecond timestamp
 static uint32_t _get_time_us(sh2_Hal_t* pInstance) {
     return to_us_since_boot(get_absolute_time());
@@ -358,26 +365,12 @@ static void wait_for_reset_or_halt() {
     }
 }
 void setup_sh2_service() {
-    printf("pääskö tänne \n");
-
     initialize_HALL();
-    printf("pääskö tänne 1\n");
-
     sh2_open_or_halt();
-    printf("pääskö tänne 2\n");
-
     sh2_setSensorCallback_or_halt();
-    printf("pääskö tänne 3\n");
- 
-    // // most likely unneeded because sh2 open already does software reset
-    // sh2_devReset_or_halt();
-    // printf("pääskö tänne 4\n");
-
-    // wait_for_reset_or_halt();
-    // printf("pääskö tänne 5\n");
-
+    sh2_devReset_or_halt();
+    wait_for_reset_or_halt();
     sh2_setSensorConfig_or_halt();
-    printf("pääskö tänne 4\n");
 }
 void read_super_sensor() {
     sh2_service();

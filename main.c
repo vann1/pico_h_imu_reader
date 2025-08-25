@@ -52,8 +52,9 @@ int main() {
 
             const float deltaTime = (float) (sensors[i].timestamp - sensors[i].previousTimestamp) / (float) CLOCKS_PER_SEC;
             sensors[i].previousTimestamp = sensors[i].timestamp;
+            // FusionAhrsUpdateNoMagnetometer(&sensors[i].ahrs, sensors[i].gyroscope, sensors[i].accelerometer, deltaTime);
 
-            FusionAhrsUpdateNoMagnetometer(&sensors[i].ahrs, sensors[i].gyroscope, sensors[i].accelerometer, deltaTime);
+            FusionAhrsUpdateExternalHeading(&sensors[i].ahrs, sensors[i].gyroscope, sensors[i].accelerometer, 0.0f, deltaTime);
             const FusionQuaternion quat = FusionAhrsGetQuaternion(&sensors[i].ahrs);
             sensors_data[i][0] = quat.element.w;
             sensors_data[i][1] = quat.element.x;

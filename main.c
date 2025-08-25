@@ -11,7 +11,7 @@
 extern sh2_vector_list_t sh2_vector_list;
 
 #define SLEEP_DURATION(hz) (float)(1.0f/hz * 1000.0f)
-#define SAMPLE_COUNT (1024)
+#define SAMPLE_COUNT (128)
 #define RESULT_COUNT (10)
 
 float sensors_data[SENSOR_COUNT][4];
@@ -25,7 +25,7 @@ typedef struct data_fluctuation_t {
 data_fluctuation_t benchmark;
 
 void calculate_results_avg(float results[][2][3], float answers[][3]) {
-    float avgs[2][3];
+    float avgs[2][3] = {{0}};
     for (int i = 0; i < RESULT_COUNT; i++) {
         // gyro
         avgs[0][0] += results[i][0][0];
@@ -45,14 +45,14 @@ void calculate_results_avg(float results[][2][3], float answers[][3]) {
     answers[1][2] = avgs[1][2] / (float)RESULT_COUNT;
 }
 
-void print_avg_fluctuations(float results[][3]) {
-    printf("Avg fluctuations for a gyroscope and accelerometer from a pool of %d results and each containing %d sample counts\n", RESULT_COUNT, SAMPLE_COUNT);
+void print_avg_fluctuations(float results[][3], int sensorId) {
+    printf("Avg fluctuations for sensor Id of %d a gyroscope and accelerometer from a pool of %d results and each containing %d sample counts\n",sensorId, RESULT_COUNT, SAMPLE_COUNT);
     printf("Gyroscope: x: %.4f; y: %.4f; z: %.4f\n", results[0][0], results[0][1], results[0][2]);
     printf("Accelerometer: x: %.4f; y: %.4f; z: %.4f\n", results[1][0], results[1][1], results[1][2]);
 }
 
 void calculate_avg_fluctuation(float gyro[][3], float* result) {
-    float avg_diff_sum[3];
+    float avg_diff_sum[3]  = {0};
     for (int i = 0; i < SAMPLE_COUNT-1; i++) {
         avg_diff_sum[0] += fabs(gyro[i][0] - gyro[i+1][0]);
         avg_diff_sum[1] += fabs(gyro[i][1] - gyro[i+1][1]);
@@ -93,13 +93,15 @@ int main() {
 	initialize_sensors();
 
     Sensor sensors[SENSOR_COUNT];
-    initialize_calibrations(sensors); 
-    initialize_algos(sensors);   
+    // initialize_calibrations(sensors); 
+    // initialize_algos(sensors);   
     
     int counter = 0;
+    printf("Starting to benchmark...\n");
     for (int i = 0; i<RESULT_COUNT;i++)
     {
-        for (int j = 0; i<SAMPLE_COUNT;j++) {
+        printf("Starting benchmark iteration: %d\n", i);
+        for (int j = 0; j<SAMPLE_COUNT;j++) {
             read_all_sensors(sensors);
             benchmark.gyro[j][0] = sensors[0].gyroscope.axis.x;
             benchmark.gyro[j][1] = sensors[0].gyroscope.axis.y;
@@ -108,13 +110,15 @@ int main() {
             benchmark.accel[j][0] = sensors[0].accelerometer.axis.x;
             benchmark.accel[j][1] = sensors[0].accelerometer.axis.y;
             benchmark.accel[j][2] = sensors[0].accelerometer.axis.z;
-            sleep_ms(1); // 120hz | 2
+            sleep_ms(4);
         }
+        printf("Benchmark iteration %d is done\n", i);
+        float gyro_results[3]= {0};
+        float accel_results[3] = {0};
+        calculate_avg_fluctuation(benchmark.gyro, gyro_results);
+        calculate_avg_fluctuation(benchmark.accel, accel_results);
 
-        float gyro_results[3];
-        float accel_results[3];
-        calculate_avg_fluctuation(&benchmark.gyro, &gyro_results);
-        calculate_avg_fluctuation(&benchmark.accel, &accel_results);
+        printf("Calculated the avg flucations for iteration %d\n", i);
 
         //Gyro
         benchmark.results[i][0][0] = gyro_results[0];
@@ -125,10 +129,11 @@ int main() {
         benchmark.results[i][1][0] = accel_results[0];
         benchmark.results[i][1][1] = accel_results[1];
         benchmark.results[i][1][2] = accel_results[2];
-    }
-    float final_answers[2][3];
-    calculate_results_avg(&benchmark.results, &final_answers);
-    print_avg_fluctuations(final_answers);
+        }
+    
+    float final_answers[2][3] = {{0}};
+    calculate_results_avg(benchmark.results, final_answers);
+    print_avg_fluctuations(final_answers, 0);
 
     while(1);
     return 0;

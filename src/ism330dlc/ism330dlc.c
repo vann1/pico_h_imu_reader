@@ -59,7 +59,6 @@ bool ism330dhcx_init(i2c_inst_t *i2c_port, uint8_t device_addr) {
     // Configure gyroscope
     // ODR = 6.66 kHz, ±250 dps
     uint8_t g_cntrl_val = G_ODR | G_DPS_RANGE_MASK;
-    printf("Gyro control value: %d\n", g_cntrl_val);
     if (!ism330dhcx_write_reg(i2c_port, device_addr, CTRL2_G, G_ODR | G_DPS_RANGE_MASK)) {
         printf("Failed to configure gyroscope\n");
         return false;

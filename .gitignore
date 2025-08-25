@@ -9,4 +9,3 @@ ISM330DHCX-PID/
 build_and_run_mount.sh
 sandbox*
 .venv
-src/sh2/

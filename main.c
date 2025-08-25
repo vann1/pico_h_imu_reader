@@ -10,8 +10,20 @@
 extern sh2_vector_list_t sh2_vector_list;
 
 #define SLEEP_DURATION(hz) (float)(1.0f/hz * 1000.0f)
+#define ARRAY_SIZE (1024)
+#define RESULT_COUNT (64)
 
 float sensors_data[SENSOR_COUNT][4];
+
+
+typedef struct data_fluctuation_t {
+    float gyro[3][ARRAY_SIZE];
+    float gyro[3][ARRAY_SIZE];
+    float results[2][RESULT_COUNT];
+    int cursor;
+} data_fluctuation_t;
+
+data_fluctuation_t benchmark = {.cursor = 0};
 
 
 void print_output_data (void) {
@@ -23,8 +35,9 @@ void print_output_data (void) {
 
 void print_raw_sensor_data(Sensor* sensors) {
     for (int i=0; i<SENSOR_COUNT; i++) {
-        printf("ax: %.4f, ay: %.4f, az: %.4f| gx: %.4f, gy: %.4f, gz: %.4f \n", sensors[i].accelerometer.axis.x, sensors[i].accelerometer.axis.y, sensors[i].accelerometer.axis.z, sensors[i].gyroscope.axis.x, sensors[i].gyroscope.axis.y, sensors[i].gyroscope.axis.z);
+        printf("ax%d: %.4f, ay%d: %.4f, az%d: %.4f| gx%d: %.4f, gy%d: %.4f, gz%d: %.4f \n", i, sensors[i].accelerometer.axis.x, i, sensors[i].accelerometer.axis.y, i, sensors[i].accelerometer.axis.z, i, sensors[i].gyroscope.axis.x, i, sensors[i].gyroscope.axis.y, i, sensors[i].gyroscope.axis.z);
     }
+    printf("--------------------------------------------------------------------------------------------------------------------------------------\n");
 }
 
 int main() {
@@ -68,7 +81,7 @@ int main() {
         // }
         // print_output_data();
         print_raw_sensor_data(sensors);
-        sleep_ms(2); // 120hz
+        sleep_ms(100); // 120hz | 2
     }
     return 0;
 }

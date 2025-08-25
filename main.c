@@ -77,6 +77,10 @@ void print_raw_sensor_data(Sensor* sensors) {
     printf("--------------------------------------------------------------------------------------------------------------------------------------\n");
 }
 
+void apply_lpf(float new_val, float old_value, bool first) {
+
+}
+
 int main() {
     stdio_init_all();
     while (!tud_cdc_connected()) {
@@ -101,24 +105,38 @@ int main() {
     for (int i = 0; i<RESULT_COUNT;i++)
     {
         printf("Starting benchmark iteration: %d\n", i);
+
+        float previous_values[2][3] = {{0}};
+        bool first = true;
+
         for (int j = 0; j<SAMPLE_COUNT;j++) {
             read_all_sensors(sensors);
-            benchmark.gyro[j][0] = sensors[0].gyroscope.axis.x;
-            benchmark.gyro[j][1] = sensors[0].gyroscope.axis.y;
-            benchmark.gyro[j][2] = sensors[0].gyroscope.axis.z;
+            benchmark.gyro[j][0] = apply_lpf(sensors[0].gyroscope.axis.x, previous_values[0][0], first);
+            benchmark.gyro[j][1] = apply_lpf(sensors[0].gyroscope.axis.y, previous_values[0][1], first);
+            benchmark.gyro[j][2] = apply_lpf(sensors[0].gyroscope.axis.z, previous_values[0][2], first);
+            
+            benchmark.accel[j][0] = apply_lpf(sensors[0].accelerometer.axis.x, previous_values[1][0], first);
+            benchmark.accel[j][1] = apply_lpf(sensors[0].accelerometer.axis.y, previous_values[1][1], first);
+            benchmark.accel[j][2] = apply_lpf(sensors[0].accelerometer.axis.z, previous_values[1][2], first);
 
-            benchmark.accel[j][0] = sensors[0].accelerometer.axis.x;
-            benchmark.accel[j][1] = sensors[0].accelerometer.axis.y;
-            benchmark.accel[j][2] = sensors[0].accelerometer.axis.z;
-            sleep_ms(4);
+            // Gyro
+            previous_values[0][0] = benchmark.gyro[j][0]
+            previous_values[0][1] = benchmark.gyro[j][1]
+            previous_values[0][2] = benchmark.gyro[j][2]
+
+            //Accel 
+            previous_values[1][0] = benchmark.accel[j][0];
+            previous_values[1][1] = benchmark.accel[j][1];
+            previous_values[1][2] = benchmark.accel[j][2];
+
+            first = false;
+            sleep_ms(10);
         }
         printf("Benchmark iteration %d is done\n", i);
         float gyro_results[3]= {0};
         float accel_results[3] = {0};
         calculate_avg_fluctuation(benchmark.gyro, gyro_results);
         calculate_avg_fluctuation(benchmark.accel, accel_results);
-
-        printf("Calculated the avg flucations for iteration %d\n", i);
 
         //Gyro
         benchmark.results[i][0][0] = gyro_results[0];

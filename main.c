@@ -50,8 +50,7 @@ int main() {
             sensors[i].accelerometer = FusionCalibrationInertial(sensors[i].accelerometer, sensors[i].calibration.accelerometerMisalignment, sensors[i].calibration.accelerometerSensitivity, sensors[i].calibration.accelerometerOffset);
             sensors[i].gyroscope = FusionOffsetUpdate(&sensors[i].offset, sensors[i].gyroscope);
 
-            const float deltaTime = (float) (sensors[i].timestamp - sensors[i].previousTimestamp) / (float) CLOCKS_PER_SEC;
-            printf("Deltatime: %.2f\n", deltaTime);
+            const float deltaTime = (float) (sensors[i].timestamp - sensors[i].previousTimestamp) / 1e6f;
             sensors[i].previousTimestamp = sensors[i].timestamp;
             // FusionAhrsUpdateNoMagnetometer(&sensors[i].ahrs, sensors[i].gyroscope, sensors[i].accelerometer, deltaTime);
 
@@ -63,7 +62,8 @@ int main() {
             sensors_data[i][3] = quat.element.z;           
         }
         print_output_data();
-        sleep_ms(SLEEP_DURATION((float)SAMPLE_RATE));
+        uint64_t loop_end = time_us_64();
+        sleep_ms(2); // 120hz
     }
     return 0;
 }

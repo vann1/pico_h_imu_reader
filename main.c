@@ -21,6 +21,11 @@ void print_output_data (void) {
     printf("\n");
 }
 
+void print_raw_sensor_data(Sensor* sensors) {
+    for (int i=0; i<SENSOR_COUNT; i++) {
+        printf("ax: %.4f, ay: %.4f, az: %.4f| gx: %.4f, gy: %.4f, gz: %.4f \n", sensors[i].accelerometer.axis.x, sensors[i].accelerometer.axis.y, sensors[i].accelerometer.axis.z, sensors[i].gyroscope.axis.x, sensors[i].gyroscope.axis.y, sensors[i].gyroscope.axis.z);
+    }
+}
 
 int main() {
     stdio_init_all();
@@ -45,24 +50,24 @@ int main() {
     uint64_t start_time = time_us_64();
     while (true) {
         read_all_sensors(sensors);
-        for (int i=0; i<SENSOR_COUNT;i++) {
-            sensors[i].gyroscope = FusionCalibrationInertial(sensors[i].gyroscope, sensors[i].calibration.gyroscopeMisalignment, sensors[i].calibration.gyroscopeSensitivity, sensors[i].calibration.gyroscopeOffset);
-            sensors[i].accelerometer = FusionCalibrationInertial(sensors[i].accelerometer, sensors[i].calibration.accelerometerMisalignment, sensors[i].calibration.accelerometerSensitivity, sensors[i].calibration.accelerometerOffset);
-            sensors[i].gyroscope = FusionOffsetUpdate(&sensors[i].offset, sensors[i].gyroscope);
+        // for (int i=0; i<SENSOR_COUNT;i++) {
+        //     sensors[i].gyroscope = FusionCalibrationInertial(sensors[i].gyroscope, sensors[i].calibration.gyroscopeMisalignment, sensors[i].calibration.gyroscopeSensitivity, sensors[i].calibration.gyroscopeOffset);
+        //     sensors[i].accelerometer = FusionCalibrationInertial(sensors[i].accelerometer, sensors[i].calibration.accelerometerMisalignment, sensors[i].calibration.accelerometerSensitivity, sensors[i].calibration.accelerometerOffset);
+        //     sensors[i].gyroscope = FusionOffsetUpdate(&sensors[i].offset, sensors[i].gyroscope);
 
-            const float deltaTime = (float) (sensors[i].timestamp - sensors[i].previousTimestamp) / 1e6f;
-            sensors[i].previousTimestamp = sensors[i].timestamp;
-            // FusionAhrsUpdateNoMagnetometer(&sensors[i].ahrs, sensors[i].gyroscope, sensors[i].accelerometer, deltaTime);
+        //     const float deltaTime = (float) (sensors[i].timestamp - sensors[i].previousTimestamp) / 1e6f;
+        //     sensors[i].previousTimestamp = sensors[i].timestamp;
+        //     // FusionAhrsUpdateNoMagnetometer(&sensors[i].ahrs, sensors[i].gyroscope, sensors[i].accelerometer, deltaTime);
 
-            FusionAhrsUpdateExternalHeading(&sensors[i].ahrs, sensors[i].gyroscope, sensors[i].accelerometer, 0.0f, deltaTime);
-            const FusionQuaternion quat = FusionAhrsGetQuaternion(&sensors[i].ahrs);
-            sensors_data[i][0] = quat.element.w;
-            sensors_data[i][1] = quat.element.x;
-            sensors_data[i][2] = quat.element.y;
-            sensors_data[i][3] = quat.element.z;           
-        }
-        print_output_data();
-        uint64_t loop_end = time_us_64();
+        //     FusionAhrsUpdateExternalHeading(&sensors[i].ahrs, sensors[i].gyroscope, sensors[i].accelerometer, 0.0f, deltaTime);
+        //     const FusionQuaternion quat = FusionAhrsGetQuaternion(&sensors[i].ahrs);
+        //     sensors_data[i][0] = quat.element.w;
+        //     sensors_data[i][1] = quat.element.x;
+        //     sensors_data[i][2] = quat.element.y;
+        //     sensors_data[i][3] = quat.element.z;           
+        // }
+        // print_output_data();
+        print_raw_sensor_data(sensors);
         sleep_ms(2); // 120hz
     }
     return 0;

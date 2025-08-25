@@ -77,8 +77,13 @@ void print_raw_sensor_data(Sensor* sensors) {
     printf("--------------------------------------------------------------------------------------------------------------------------------------\n");
 }
 
-void apply_lpf(float new_val, float old_value, bool first) {
-
+float apply_lpf(float new_val, float old_value, bool first) {
+    float alpha = 0.1f;
+    if (first) {
+        return new_val;
+    } else {
+        return old_value*(1-alpha) + alpha*new_val;
+    }
 }
 
 int main() {
@@ -120,9 +125,9 @@ int main() {
             benchmark.accel[j][2] = apply_lpf(sensors[0].accelerometer.axis.z, previous_values[1][2], first);
 
             // Gyro
-            previous_values[0][0] = benchmark.gyro[j][0]
-            previous_values[0][1] = benchmark.gyro[j][1]
-            previous_values[0][2] = benchmark.gyro[j][2]
+            previous_values[0][0] = benchmark.gyro[j][0];
+            previous_values[0][1] = benchmark.gyro[j][1];
+            previous_values[0][2] = benchmark.gyro[j][2];
 
             //Accel 
             previous_values[1][0] = benchmark.accel[j][0];

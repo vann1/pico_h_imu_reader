@@ -20,8 +20,8 @@ typedef struct Sensor {
     FusionAhrsSettings settings;
     FusionVector accelerometer;
     FusionVector gyroscope;
-    clock_t previousTimestamp;
-    clock_t timestamp;
+    uint64_t previousTimestamp;
+    uint64_t timestamp;
     FusionVector magnetometer;
 } Sensor;
 

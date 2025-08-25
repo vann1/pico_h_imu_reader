@@ -46,15 +46,15 @@ int main() {
     while (true) {
         read_all_sensors(sensors);
         for (int i=0; i<SENSOR_COUNT;i++) {
+            printf("gyro_x: %.4f, gyro_y: %.4f, gyro_z: %.4f, acc_x: %.4f, acc_y: %.4f, acc_z: %.4f\n", sensors[i].gyroscope.axis.x,sensors[i].gyroscope.axis.y,sensors[i].gyroscope.axis.z,sensors[i].accelerometer.axis.x,sensors[i].accelerometer.axis.y,sensors[i].accelerometer.axis.z);
             sensors[i].gyroscope = FusionCalibrationInertial(sensors[i].gyroscope, sensors[i].calibration.gyroscopeMisalignment, sensors[i].calibration.gyroscopeSensitivity, sensors[i].calibration.gyroscopeOffset);
             sensors[i].accelerometer = FusionCalibrationInertial(sensors[i].accelerometer, sensors[i].calibration.accelerometerMisalignment, sensors[i].calibration.accelerometerSensitivity, sensors[i].calibration.accelerometerOffset);
             sensors[i].gyroscope = FusionOffsetUpdate(&sensors[i].offset, sensors[i].gyroscope);
 
             const float deltaTime = (float) (sensors[i].timestamp - sensors[i].previousTimestamp) / (float) CLOCKS_PER_SEC;
             sensors[i].previousTimestamp = sensors[i].timestamp;
-            // FusionAhrsUpdateNoMagnetometer(&sensors[i].ahrs, sensors[i].gyroscope, sensors[i].accelerometer, deltaTime);
-
-            FusionAhrsUpdateExternalHeading(&sensors[i].ahrs, sensors[i].gyroscope, sensors[i].accelerometer, 0.0f, deltaTime);
+            FusionAhrsUpdateNoMagnetometer(&sensors[i].ahrs, sensors[i].gyroscope, sensors[i].accelerometer, deltaTime);
+            // FusionAhrsUpdateExternalHeading(&sensors[i].ahrs, sensors[i].gyroscope, sensors[i].accelerometer, 0.0f, deltaTime);
             const FusionQuaternion quat = FusionAhrsGetQuaternion(&sensors[i].ahrs);
             sensors_data[i][0] = quat.element.w;
             sensors_data[i][1] = quat.element.x;

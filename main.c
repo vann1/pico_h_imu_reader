@@ -7,6 +7,7 @@
 #include <time.h>
 #include <sh2_paketti.h>
 #include "read.h"
+#include "InitFusion.h"
 extern sh2_vector_list_t sh2_vector_list;
 
 #define SLEEP_DURATION(hz) (float)(1.0f/hz * 1000.0f)

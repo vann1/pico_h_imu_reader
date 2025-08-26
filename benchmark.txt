@@ -1,0 +1,24 @@
+// DPS RANGE 250
+Sensor1:
+Gyroscope: x: 2.1268; y: 2.2046; z: 1.9518
+Accelerometer: x: 0.0076; y: 0.0046; z: 0.0044
+Sensor2:
+
+Gyroscope: x: 2.0026; y: 2.2057; z: 1.8344
+Accelerometer: x: 0.0044; y: 0.0066; z: 0.0086
+
+Sensor3:
+Gyroscope: x: 1.9766; y: 1.7999; z: 1.8545
+Accelerometer: x: 0.0056; y: 0.0041; z: 0.0078
+
+// DPs RANGE 125
+Gyroscope: x: 1.9666; y: 2.1597; z: 2.0540
+Accelerometer: x: 0.0076; y: 0.0046; z: 0.0043
+
+// ODR 416hz
+Gyroscope: x: 0.4519; y: 0.2939; z: 0.1955
+Accelerometer: x: 0.0085; y: 0.0045; z: 0.0043
+
+// basic LPF 
+Gyroscope: x: 0.0559; y: 0.0353; z: 0.0212
+Accelerometer: x: 0.0006; y: 0.0003; z: 0.0003

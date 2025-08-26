@@ -59,7 +59,6 @@ bool ism330dhcx_init(i2c_inst_t *i2c_port, uint8_t device_addr) {
     // Configure gyroscope
     // ODR = 6.66 kHz, ±250 dps
     uint8_t g_cntrl_val = G_ODR | G_DPS_RANGE_MASK;
-    printf("Gyro control value: %d\n", g_cntrl_val);
     if (!ism330dhcx_write_reg(i2c_port, device_addr, CTRL2_G, G_ODR | G_DPS_RANGE_MASK)) {
         printf("Failed to configure gyroscope\n");
         return false;
@@ -75,12 +74,13 @@ int initialize_sensors(void) {
         printf("Failed to initialize ISM330DHCX with i2c_port: %s and i2c_address: 0x%02x!\n", I2C_PORT_0, ISM330DHCX_ADDR_DO_LOW);
     }
 
-   // if (!ism330dhcx_init(I2C_PORT_0, ISM330DHCX_ADDR_DO_HIGH)) {
-            // printf("Failed to initialize ISM330DHCX with i2c_port: %s and i2c_address: 0x%02x!\n", I2C_PORT_0, ISM330DHCX_ADDR_DO_HIGH);
-      // }
-    // if (!ism330dhcx_init(I2C_PORT_1, ISM330DHCX_ADDR_DO_LOW)) {
-    //     printf("Failed to initialize ISM330DHCX with i2c_port: %s and i2c_address: 0x%02x!\n", I2C_PORT_1, ISM330DHCX_ADDR_DO_LOW);
-    // }
+   if (!ism330dhcx_init(I2C_PORT_0, ISM330DHCX_ADDR_DO_HIGH)) {
+            printf("Failed to initialize ISM330DHCX with i2c_port: %s and i2c_address: 0x%02x!\n", I2C_PORT_0, ISM330DHCX_ADDR_DO_HIGH);
+    }
+
+    if (!ism330dhcx_init(I2C_PORT_1, ISM330DHCX_ADDR_DO_LOW)) {
+        printf("Failed to initialize ISM330DHCX with i2c_port: %s and i2c_address: 0x%02x!\n", I2C_PORT_1, ISM330DHCX_ADDR_DO_LOW);
+    }
     // if (!ism330dhcx_init(I2C_PORT_1, ISM330DHCX_ADDR_DO_HIGH)) {
            // printf("Failed to initialize ISM330DHCX with i2c_port: %s and i2c_address: 0x%02x!\n", I2C_PORT_1, ISM330DHCX_ADDR_DO_HIGH);
        // }

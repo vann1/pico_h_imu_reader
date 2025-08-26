@@ -78,7 +78,7 @@ void print_raw_sensor_data(Sensor* sensors) {
 }
 
 float apply_lpf(float new_val, float old_value, bool first) {
-    float alpha = 0.1f;
+    float alpha = 0.05f;
     if (first) {
         return new_val;
     } else {
@@ -98,6 +98,8 @@ int main() {
 		printf("I2C pin setup failed");
 		return 1;
     }
+
+    
 
 	initialize_sensors();
 

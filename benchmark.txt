@@ -19,6 +19,15 @@ Accelerometer: x: 0.0076; y: 0.0046; z: 0.0043
 Gyroscope: x: 0.4519; y: 0.2939; z: 0.1955
 Accelerometer: x: 0.0085; y: 0.0045; z: 0.0043
 
+// ODR 208hz
+Gyroscope: x: 0.0075; y: 0.0123; z: 0.0073
+
+// ODR 104hz
+Gyroscope: x: 0.0118; y: 0.0152; z: 0.0083
+
+// ODR 208hz; alpha = 0.95
+Gyroscope: x: 0.0059; y: 0.0062; z: 0.0038
+
 // basic LPF 
 Gyroscope: x: 0.0559; y: 0.0353; z: 0.0212
 Accelerometer: x: 0.0006; y: 0.0003; z: 0.0003

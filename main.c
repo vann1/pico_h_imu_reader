@@ -16,7 +16,6 @@ extern sh2_vector_list_t sh2_vector_list;
 
 float sensors_data[SENSOR_COUNT][4];
 #define LPF_ALPHA 0.1f
-extern sh2_vector_list_t sh2_vector_list;
 
 #define SLEEP_DURATION(hz) (float)(1.0f/hz * 1000.0f)
 #define ARRAY_SIZE (1024)

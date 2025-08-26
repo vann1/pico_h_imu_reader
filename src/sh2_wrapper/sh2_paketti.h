@@ -25,14 +25,8 @@ static void initialize_HALL();
 static void wait_for_reset_or_halt();
 void setup_sh2_service();
 void read_super_sensor();
-<<<<<<< HEAD
 void printEvent(const sh2_SensorEvent_t * event);
-=======
-<<<<<<< HEAD
 void printEvent(const sh2_SensorEvent_t * event);
-=======
->>>>>>> fc3668f (Fresh start)
->>>>>>> d205c2c (?)
 typedef struct sh2_vector_list_t {
     uint16_t cursor;
     float rolling_list[SH_2_VECOTR_LIST_ROW_MAX][4];

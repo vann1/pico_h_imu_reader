@@ -7,20 +7,15 @@
 #include <time.h>
 #include <sh2_paketti.h>
 #include "read.h"
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> d205c2c (?)
 #include "InitFusion.h"
+
 extern sh2_vector_list_t sh2_vector_list;
+
 #define TIME_SLEEP (1000.0f/(float)SAMPLE_RATE)
 #define SLEEP_DURATION(hz) (float)(1.0f/hz * 1000.0f)
 
 float sensors_data[SENSOR_COUNT][4];
 #define LPF_ALPHA 0.1f
-<<<<<<< HEAD
-=======
-=======
 extern sh2_vector_list_t sh2_vector_list;
 
 #define SLEEP_DURATION(hz) (float)(1.0f/hz * 1000.0f)
@@ -58,9 +53,6 @@ typedef struct data_fluctuation_t {
 } data_fluctuation_t;
 
 data_fluctuation_t benchmark = {.cursor = 0};
->>>>>>> fc3668f (Fresh start)
->>>>>>> d205c2c (?)
-
 
 void print_output_data (void) {
     for (int i = 0; i < SENSOR_COUNT; i++) {
@@ -69,17 +61,10 @@ void print_output_data (void) {
     printf("\n");
 }
 
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> d205c2c (?)
 float apply_lpf(float new_val, float old_value) {
     return old_value*(1.0f-LPF_ALPHA) + LPF_ALPHA*new_val;
 }
 
-<<<<<<< HEAD
-=======
-=======
 void print_raw_sensor_data(Sensor* sensors) {
     for (int i=0; i<SENSOR_COUNT; i++) {
         printf("ax%d: %.4f, ay%d: %.4f, az%d: %.4f| gx%d: %.4f, gy%d: %.4f, gz%d: %.4f \n", i, sensors[i].accelerometer.axis.x, i, sensors[i].accelerometer.axis.y, i, sensors[i].accelerometer.axis.z, i, sensors[i].gyroscope.axis.x, i, sensors[i].gyroscope.axis.y, i, sensors[i].gyroscope.axis.z);
@@ -171,8 +156,6 @@ void wait_for_settings() {
         sleep_ms(300); // Avoid tight loop
     }
 }
->>>>>>> fc3668f (Fresh start)
->>>>>>> d205c2c (?)
 
 int main() {
     stdio_init_all();
@@ -185,11 +168,8 @@ int main() {
     if (result != 1) {
 		printf("I2C pin setup failed");
 		return 1;
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> d205c2c (?)
     } 
+
     initialize_sensors();
 
     Sensor sensors[SENSOR_COUNT];
@@ -230,42 +210,7 @@ int main() {
         // uint64_t iteration_time = loop_end - start_time;
         // printf("Iteration time: %llu\n", iteration_time);
         sleep_ms(TIME_SLEEP-6.252f); 
-<<<<<<< HEAD
-=======
-=======
     }
 
-	initialize_sensors();
-
-    Sensor sensors[SENSOR_COUNT];
-    initialize_calibrations(sensors); 
-    initialize_algos(sensors);   
-    
-    int counter = 0;
-    uint64_t start_time = time_us_64();
-    while (true) {
-        read_all_sensors(sensors);
-        // for (int i=0; i<SENSOR_COUNT;i++) {
-        //     sensors[i].gyroscope = FusionCalibrationInertial(sensors[i].gyroscope, sensors[i].calibration.gyroscopeMisalignment, sensors[i].calibration.gyroscopeSensitivity, sensors[i].calibration.gyroscopeOffset);
-        //     sensors[i].accelerometer = FusionCalibrationInertial(sensors[i].accelerometer, sensors[i].calibration.accelerometerMisalignment, sensors[i].calibration.accelerometerSensitivity, sensors[i].calibration.accelerometerOffset);
-        //     sensors[i].gyroscope = FusionOffsetUpdate(&sensors[i].offset, sensors[i].gyroscope);
-
-        //     const float deltaTime = (float) (sensors[i].timestamp - sensors[i].previousTimestamp) / 1e6f;
-        //     sensors[i].previousTimestamp = sensors[i].timestamp;
-        //     // FusionAhrsUpdateNoMagnetometer(&sensors[i].ahrs, sensors[i].gyroscope, sensors[i].accelerometer, deltaTime);
-
-        //     FusionAhrsUpdateExternalHeading(&sensors[i].ahrs, sensors[i].gyroscope, sensors[i].accelerometer, 0.0f, deltaTime);
-        //     const FusionQuaternion quat = FusionAhrsGetQuaternion(&sensors[i].ahrs);
-        //     sensors_data[i][0] = quat.element.w;
-        //     sensors_data[i][1] = quat.element.x;
-        //     sensors_data[i][2] = quat.element.y;
-        //     sensors_data[i][3] = quat.element.z;           
-        // }
-        // print_output_data();
-        print_raw_sensor_data(sensors);
-        sleep_ms(100); // 120hz | 2
->>>>>>> fc3668f (Fresh start)
->>>>>>> d205c2c (?)
-    }
     return 0;
 }

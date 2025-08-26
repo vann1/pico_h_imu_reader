@@ -8,6 +8,7 @@
 
 void initialize_calibrations(Sensor* sensors);
 void initialize_algos(Sensor* sensors);
+void initialize_sensors_values(Sensor* sensors);
 #endif //INITFUSION_H
 
 

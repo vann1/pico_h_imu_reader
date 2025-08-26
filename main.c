@@ -39,24 +39,29 @@ int main() {
     if (result != 1) {
 		printf("I2C pin setup failed");
 		return 1;
-    }
+    } 
 
-	initialize_sensors();
 
     Sensor sensors[SENSOR_COUNT];
+    initialize_sensors_values(sensors);
     initialize_calibrations(sensors); 
     initialize_algos(sensors);   
-    
     int counter = 0;
     uint64_t start_time = time_us_64();
     while (true) {
         read_all_sensors(sensors);
         for (int i=0; i<SENSOR_COUNT;i++) {
-            
+            sensors[i].gyroscope_old.axis.x = apply_lpf(sensors[i].gyroscope.axis.x, sensors[i].gyroscope_old.axis.x);
+            sensors[i].gyroscope_old.axis.y = apply_lpf(sensors[i].gyroscope.axis.y, sensors[i].gyroscope_old.axis.y);
+            sensors[i].gyroscope_old.axis.z = apply_lpf(sensors[i].gyroscope.axis.z, sensors[i].gyroscope_old.axis.z);
+
+            sensors[i].accelerometer_old.axis.x = apply_lpf(sensors[i].accelerometer.axis.x, sensors[i].accelerometer_old.axis.x);
+            sensors[i].accelerometer_old.axis.y = apply_lpf(sensors[i].accelerometer.axis.y, sensors[i].accelerometer_old.axis.y);
+            sensors[i].accelerometer_old.axis.z = apply_lpf(sensors[i].accelerometer.axis.z, sensors[i].accelerometer_old.axis.z);
 
             // printf("gyro_x: %.4f, gyro_y: %.4f, gyro_z: %.4f, acc_x: %.4f, acc_y: %.4f, acc_z: %.4f\n", sensors[i].gyroscope.axis.x,sensors[i].gyroscope.axis.y,sensors[i].gyroscope.axis.z,sensors[i].accelerometer.axis.x,sensors[i].accelerometer.axis.y,sensors[i].accelerometer.axis.z);
-            sensors[i].gyroscope = FusionCalibrationInertial(sensors[i].gyroscope, sensors[i].calibration.gyroscopeMisalignment, sensors[i].calibration.gyroscopeSensitivity, sensors[i].calibration.gyroscopeOffset);
-            sensors[i].accelerometer = FusionCalibrationInertial(sensors[i].accelerometer, sensors[i].calibration.accelerometerMisalignment, sensors[i].calibration.accelerometerSensitivity, sensors[i].calibration.accelerometerOffset);
+            sensors[i].gyroscope = FusionCalibrationInertial(sensors[i].gyroscope_old, sensors[i].calibration.gyroscopeMisalignment, sensors[i].calibration.gyroscopeSensitivity, sensors[i].calibration.gyroscopeOffset);
+            sensors[i].accelerometer = FusionCalibrationInertial(sensors[i].accelerometer_old, sensors[i].calibration.accelerometerMisalignment, sensors[i].calibration.accelerometerSensitivity, sensors[i].calibration.accelerometerOffset);
             sensors[i].gyroscope = FusionOffsetUpdate(&sensors[i].offset, sensors[i].gyroscope);
 
             const float deltaTime = (float) (sensors[i].timestamp - sensors[i].previousTimestamp) / 1e6f;

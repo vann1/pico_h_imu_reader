@@ -1,5 +1,23 @@
 #include "InitFusion.h"
 
+void initialize_sensors_values(Sensor* sensors) {
+    for (int i = 0; i<SENSOR_COUNT;i++) {
+        sensors[i].gyroscope.axis.x = 0.0f;
+        sensors[i].gyroscope.axis.y = 0.0f;
+        sensors[i].gyroscope.axis.z = 0.0f;
+        sensors[i].gyroscope_old.axis.x = 0.0f;
+        sensors[i].gyroscope_old.axis.y = 0.0f;
+        sensors[i].gyroscope_old.axis.z = 0.0f;
+
+        sensors[i].accelerometer.axis.x = 0.0f;
+        sensors[i].accelerometer.axis.y = 0.0f;
+        sensors[i].accelerometer.axis.z = 0.0f;
+        sensors[i].accelerometer_old.axis.x = 0.0f;
+        sensors[i].accelerometer_old.axis.y = 0.0f;
+        sensors[i].accelerometer_old.axis.z = 0.0f;
+    }
+}
+
 void initialize_calibrations(Sensor* sensors) {
     for (int i = 0; i<SENSOR_COUNT;i++) {
         sensors[i].calibration.gyroscopeMisalignment = (FusionMatrix){ 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f};

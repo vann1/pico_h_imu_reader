@@ -40,7 +40,7 @@ int main() {
 		printf("I2C pin setup failed");
 		return 1;
     } 
-
+    initialize_sensors();
 
     Sensor sensors[SENSOR_COUNT];
     initialize_sensors_values(sensors);

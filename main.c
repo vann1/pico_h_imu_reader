@@ -9,7 +9,7 @@
 #include "read.h"
 #include "InitFusion.h"
 extern sh2_vector_list_t sh2_vector_list;
-
+#define TIME_SLEEP (1000.0f/(float)SAMPLE_RATE)
 #define SLEEP_DURATION(hz) (float)(1.0f/hz * 1000.0f)
 
 float sensors_data[SENSOR_COUNT][4];
@@ -47,8 +47,9 @@ int main() {
     initialize_calibrations(sensors); 
     initialize_algos(sensors);   
     int counter = 0;
-    uint64_t start_time = time_us_64();
     while (true) {
+        // uint64_t start_time = time_us_64();
+        
         read_all_sensors(sensors);
         for (int i=0; i<SENSOR_COUNT;i++) {
             sensors[i].gyroscope_old.axis.x = apply_lpf(sensors[i].gyroscope.axis.x, sensors[i].gyroscope_old.axis.x);
@@ -75,8 +76,10 @@ int main() {
             sensors_data[i][3] = quat.element.z;           
         }
         print_output_data();
-        uint64_t loop_end = time_us_64();
-        sleep_ms(2); // 120hz
+        // uint64_t loop_end = time_us_64();
+        // uint64_t iteration_time = loop_end - start_time;
+        // printf("Iteration time: %llu\n", iteration_time);
+        sleep_ms(TIME_SLEEP-6.252f); 
     }
     return 0;
 }

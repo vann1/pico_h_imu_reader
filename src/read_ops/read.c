@@ -1,5 +1,5 @@
 #include "read.h"
-
+#include "ism330dlc.h"
 void read_all_sensors(Sensor* sensors) {
     int index = 0;
    for (int i = 0; i < CHANNEL_COUNT; i++) {

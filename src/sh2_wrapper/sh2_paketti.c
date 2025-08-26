@@ -1,7 +1,7 @@
 #include "sh2_paketti.h"
 #include <time.h>
 #include "sh2_SensorValue.h"
-
+#include <string.h>
 // I2C configuration
 #define I2C_PORT i2c0
 #define I2C_SDA 0 // GPIO4 (Pico pin 6)
@@ -95,7 +95,7 @@ static void sensor_handler(void *cookie, sh2_SensorEvent_t *event) {
     sh2_SensorValue_t value;
     if (sh2_decodeSensorEvent(&value, event) == SH2_OK) {
         if (value.sensorId == SH2_ROTATION_VECTOR) {
-            if (l[sh2_vector_list.cursor] >= SH_2_VECOTR_LIST_ROW_MAX || !sh2_vector_list.data_ready) {
+            if (sh2_vector_list.cursor >= SH_2_VECOTR_LIST_ROW_MAX || !sh2_vector_list.data_ready) {
                 local_cursor = 0;
             }
             else {

@@ -1,5 +1,9 @@
 #include "InitFusion.h"
 
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> d205c2c (?)
 void initialize_sensors_values(Sensor* sensors) {
     for (int i = 0; i<SENSOR_COUNT;i++) {
         sensors[i].gyroscope.axis.x = 0.0f;
@@ -18,6 +22,11 @@ void initialize_sensors_values(Sensor* sensors) {
     }
 }
 
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> fc3668f (Fresh start)
+>>>>>>> d205c2c (?)
 void initialize_calibrations(Sensor* sensors) {
     for (int i = 0; i<SENSOR_COUNT;i++) {
         sensors[i].calibration.gyroscopeMisalignment = (FusionMatrix){ 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f};

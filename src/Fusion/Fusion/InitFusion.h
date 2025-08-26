@@ -8,7 +8,14 @@
 
 void initialize_calibrations(Sensor* sensors);
 void initialize_algos(Sensor* sensors);
+<<<<<<< HEAD
 void initialize_sensors_values(Sensor* sensors);
+=======
+<<<<<<< HEAD
+void initialize_sensors_values(Sensor* sensors);
+=======
+>>>>>>> fc3668f (Fresh start)
+>>>>>>> d205c2c (?)
 #endif //INITFUSION_H
 
 

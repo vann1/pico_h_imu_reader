@@ -18,7 +18,7 @@ void i2c_scan(i2c_inst_t *i2c_port);
 #define I2C_SCL_1 3
 
 #define SAMPLE_RATE (120.0f)
-#define SENSOR_COUNT 3
-#define CHANNEL_COUNT 2
+#define SENSOR_COUNT 2
+#define CHANNEL_COUNT 1
 
 #endif

@@ -9,5 +9,5 @@
 // Gyroscope
 #define G_DPS_RANGE_MASK 0x00 // 250dps
 #define G_DPS_RANGE 250
-#define G_ODR 0xA0 // 6.66 kHz
+#define G_ODR 0x50 // 6.66 kHz
 #endif //ISM330DLC_CONFIG_H
